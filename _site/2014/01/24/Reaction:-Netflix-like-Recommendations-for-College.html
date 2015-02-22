@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Brock Tibert - Enrollment Nerdery</title>
+
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/styles.css">
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<div class="wrapper">
+  <header>
+    <h1><a href="http://btibert3.github.io"><b>Enrollment Nerdery</b></a></h1>
+    <p>
+    A place to collect my thoughts on data analysis within Enrollment Management. Dare I call it Enrollment Science?
+    </p>
+
+	<img src="/assets/cartoon.png" >
+	<br><br>
+	<p>Where you can find me<br>
+		<a href="https://github.com/btibert3" target="_blank">GitHub</a><br>
+		<a href="https://twitter.com/brocktibert" target="_blank">Twitter</a><br>
+		<a href="https://www.linkedin.com/in/brocktibert" target="_blank">LinkedIn</a><br>
+		<a href="mailto:btibert3@gmail.com">Email</a>
+	</p>
+
+  </header>
+
+<section>
+	<h1>Reaction: Netflix-like Recommendations for College</h1>
+
+<p>Earlier today I saw the following post:</p>
+
+<blockquote>
+<p>Could a Netflix-like algorithm be the key to matching students to the
+right college? <a href="http://t.co/6oPgM62zA9">http://t.co/6oPgM62zA9</a>
+<a href="https://twitter.com/search?q=%23HigherEdData&amp;src=hash">#HigherEdData</a>
+<a href="https://twitter.com/search?q=%23collegeaccess&amp;src=hash">#collegeaccess</a>
+— Chronicle Data (@chrondata) <a href="https://twitter.com/chrondata/statuses/426427222459969536">January 23,
+2014</a></p>
+</blockquote>
+
+<p>Before I go deeper into my thoughts on the matter, I want to give a
+hat-tip to <a href="https://twitter.com/danjarratt">Dan Jarratt</a> for actually
+deploying his idea. Well done sir.</p>
+
+<p>Dan is on to something and I commend his approach.  Trust me, if you
+provide services to highered, you should follow Dan immediately.  He is
+studying recommender systems.  What does that mean for you?  Dan is able
+to synthesize actionable insights from Big Data.  Yes, I am
+intentionally using a term that I loathe.  He is doing the type of
+analyses today that highered will demand tomorrow.</p>
+
+<p>Now, to my thoughts.....</p>
+
+<p>I have long been pitching a &quot;Netflix-type&quot; algorithm for higher ed to my
+family, friends, well, anyone that would listen really.  Highered
+desperately needs disruption.  As a HUGE industry (<a href="http://emgonline.com/blog/2013/09/how-much-do-you-spend-on-advertising/">we were expected to
+spend over a billion dollars in just paid advertising
+alone</a>),
+I feel that we need to be more efficient.  Period.  If you follow me on
+the Twitters, it should not surprise you that I am very much against
+volume-based marketing.  Yes, we can target students, but I would hazard
+a guess that many of us don&#39;t do it well.  Hell, I know that I
+personally can do better.  My point?  Recommendation engines are the
+future of student recruitment.</p>
+
+<p>In the Chronicle article, Dan admits there is room for growth in his
+approach, but in my opinion,  he is trying to get blood from a stone.
+ Simply, he is doing the best he can with the data that are publicly
+available.  For recommendation engines to work in this context,
+enrollment scientists need access to <strong>student-school</strong> data.
+ Student-school.... what?!?!?</p>
+
+<p>For example, the algorithms that Amazon and Netflix use are based
+upon <strong>user-movie</strong> and <strong>user-product</strong> pairs respectively.  Simply, a
+user will rate a variety of products/movies.  From there, the websites
+can recommend other products/movies based on other statistically similar
+users or products.  There are many ways to do this, but that&#39;s the art
+behind the science.</p>
+
+<p>I have long wanted to get my hands on the database from services like
+Zinch or Cappex to explore this type of analysis, as they are well
+positioned to deploy this type of service.  As much as we think each
+prospective student is unique, the reality is that we can deploy various
+statistical techniques to find groups of similar students, or in Dan&#39;s
+case, statistically similar colleges.</p>
+
+<p>From there, we can leverage the &quot;college-search graph&quot; to help students
+like themselves find the colleges they are looking for, easily.  This
+type of student-school recommendation engine can help students narrow
+their list quickly to focus on the institution that fits them best.
+ After all, <a href="http://en.wikipedia.org/wiki/Satisficing">satisficing</a> is
+very real, and Barry Schwartz has exposed the <a href="http://www.ted.com/talks/barry_schwartz_on_the_paradox_of_choice.html">Paradox of
+Choice</a>.</p>
+
+<p>Because Cappex and Zinch need to make money, the leads we (i.e.
+colleges) would get from this service would be more valuable because
+they are better qualified for our institution, as such, basic economics
+would suggest we should pay more for these prospects. If we can get a
+better ROI on our spend, then logic would suggest that is where we would
+allocate our budget.</p>
+
+<p>The takeaway?  Graphs (<a href="http://en.wikipedia.org/wiki/Graph_theory">I mean this kind of
+graph</a>) are the future of
+student recruitment.</p>
+
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'enrollmentnerdery'; // required: replace example with your forum shortname
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+</section>
+
+    </div>
+    <script src="/javascripts/scale.fix.js"></script>
+  </body>
+</html>

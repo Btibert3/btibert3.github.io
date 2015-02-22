@@ -1,0 +1,398 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Brock Tibert - Enrollment Nerdery</title>
+
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/styles.css">
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<div class="wrapper">
+  <header>
+    <h1><a href="http://btibert3.github.io"><b>Enrollment Nerdery</b></a></h1>
+    <p>
+    A place to collect my thoughts on data analysis within Enrollment Management. Dare I call it Enrollment Science?
+    </p>
+
+	<img src="/assets/cartoon.png" >
+	<br><br>
+	<p>Where you can find me<br>
+		<a href="https://github.com/btibert3" target="_blank">GitHub</a><br>
+		<a href="https://twitter.com/brocktibert" target="_blank">Twitter</a><br>
+		<a href="https://www.linkedin.com/in/brocktibert" target="_blank">LinkedIn</a><br>
+		<a href="mailto:btibert3@gmail.com">Email</a>
+	</p>
+
+  </header>
+
+<section>
+	<h2>Intro</h2>
+
+<p>The use of graphs to solve business problems is not new, as companies like Amazon, Netflix, and nearly all major social media sites have been doing this for some time.  I have been obsessed with graphs for just as long, and after learning as much as I can about analysis of graphs and graph databases, I am finally getting the time to take what I have learned and apply it to real world data problems I face within Enrollment Managment.  </p>
+
+<p>In this post, I am going to explore the network structure of competition at the undergraduate level.  To get the data, I crawled a popular &quot;College Search Site&quot; to extract the information that I needed.  I won&#39;t go into specifics, but the web is one huge dataset, and sometimes you need to be able to write a bot (computer program) to crawl and build your datasets.</p>
+
+<p>In short, this post attempts to predict if one college is &quot;similar&quot; to another by leveraging the other institutions they are simlilar to, and then looking at the connections those schools have as well.  For the time being, I am only going to look 1 hop away from the school of interest, but there is so much more that we can do with this type of database.  </p>
+
+<p>I am going to leverage <a href="http://neo4j.com/">Neo4j</a>, a graph database, for this analysis.  Neo4j fits perfectly with this use case, as it not only belongs to the <code>NoSQL</code> family of databases, but with only a few lines of code, you can quickly generate recomendations, or predictions, from your graph. Pretty powerful!</p>
+
+<p>Lastly, it&#39;s worth noting that I am only looking at similarity between institutions. A more robust analysis would be the connections students make with these schools.  The data exist, but outside of one company, I don&#39;t know if other college search sites are taking advantage of this data structure.  </p>
+
+<blockquote>
+<p>If you work at one of these companies and aren&#39;t sure, reach out.  <strong>I would love to chat about what we might be able to do!</strong>  I am always looking for real-world datasets for the academic research I do outside of my role in Enrollment Managment, so maybe we can work together!</p>
+</blockquote>
+
+<hr>
+
+<h2>The Dataset</h2>
+
+<p>As always, I am using <code>R</code> for my analysis.  Nicole White has created an awesome R package <a href="https://github.com/nicolewhite/RNeo4j">RNeo4j</a> to connect to Neo4j.  I am using that library below to connect to the database and wipe out all my data for a clean environment.</p>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## load the library</span>
+<span class="kn">library</span><span class="p">(</span>RNeo4j<span class="p">)</span>
+
+<span class="c1">## connect to the graph</span>
+graph <span class="o">=</span> startGraph<span class="p">(</span><span class="s">&quot;http://localhost:7474/db/data/&quot;</span><span class="p">)</span>
+graph<span class="o">$</span><span class="kp">version</span>
+
+<span class="c1"># clear it out entirely</span>
+<span class="c1">## CAVEAT: deletes the data without user confirmation.  Do not copy and paste!</span>
+<span class="c1"># cypher(graph, &quot;MATCH (n) RETURN COUNT(n)&quot;)</span>
+clear<span class="p">(</span>graph<span class="p">,</span> input <span class="o">=</span> <span class="bp">F</span><span class="p">)</span>
+</code></pre></div>
+<p>Now that we have a clean database, let&#39;s talk about the data.</p>
+
+<p>Lets suppose you have a dataset that looks like this:</p>
+
+<table><thead>
+<tr>
+<th style="text-align: right">from_unitid</th>
+<th style="text-align: right">to_unitid</th>
+<th style="text-align: right">from_rank</th>
+<th style="text-align: right">from_rating</th>
+<th style="text-align: right">to_rating</th>
+</tr>
+</thead><tbody>
+<tr>
+<td style="text-align: right">149532</td>
+<td style="text-align: right">144157</td>
+<td style="text-align: right">17</td>
+<td style="text-align: right">2.8058</td>
+<td style="text-align: right">3.2813</td>
+</tr>
+<tr>
+<td style="text-align: right">218742</td>
+<td style="text-align: right">218973</td>
+<td style="text-align: right">18</td>
+<td style="text-align: right">3.7644</td>
+<td style="text-align: right">4.5862</td>
+</tr>
+<tr>
+<td style="text-align: right">154572</td>
+<td style="text-align: right">153603</td>
+<td style="text-align: right">5</td>
+<td style="text-align: right">4.0000</td>
+<td style="text-align: right">4.1548</td>
+</tr>
+<tr>
+<td style="text-align: right">230047</td>
+<td style="text-align: right">141981</td>
+<td style="text-align: right">12</td>
+<td style="text-align: right">3.5405</td>
+<td style="text-align: right">2.7500</td>
+</tr>
+<tr>
+<td style="text-align: right">198871</td>
+<td style="text-align: right">198303</td>
+<td style="text-align: right">1</td>
+<td style="text-align: right">3.1053</td>
+<td style="text-align: right">3.7119</td>
+</tr>
+<tr>
+<td style="text-align: right">237686</td>
+<td style="text-align: right">131399</td>
+<td style="text-align: right">22</td>
+<td style="text-align: right">2.7949</td>
+<td style="text-align: right">3.0000</td>
+</tr>
+<tr>
+<td style="text-align: right">211893</td>
+<td style="text-align: right">166027</td>
+<td style="text-align: right">25</td>
+<td style="text-align: right">5.0000</td>
+<td style="text-align: right">4.3771</td>
+</tr>
+<tr>
+<td style="text-align: right">1017</td>
+<td style="text-align: right">228884</td>
+<td style="text-align: right">19</td>
+<td style="text-align: right">5.0000</td>
+<td style="text-align: right">3.6842</td>
+</tr>
+<tr>
+<td style="text-align: right">219718</td>
+<td style="text-align: right">220075</td>
+<td style="text-align: right">18</td>
+<td style="text-align: right">3.1778</td>
+<td style="text-align: right">3.7490</td>
+</tr>
+<tr>
+<td style="text-align: right">157739</td>
+<td style="text-align: right">156851</td>
+<td style="text-align: right">12</td>
+<td style="text-align: right">3.3000</td>
+<td style="text-align: right">3.2941</td>
+</tr>
+</tbody></table>
+
+<p>Here is a description of what these fields represent.</p>
+
+<ol>
+<li> <code>from_unitid</code>:  The IPEDS <code>unitid</code> for the school of interest.</li>
+<li> <code>to_unitid</code>&quot;:  The IPEDS <code>unitid</code> for the school that is similar to <code>from_unitid</code><br></li>
+<li> <code>from_rank</code>:  A rank-ordered estimate of <strong><em>how similar</em></strong> the <code>from</code> institution is to the <code>to</code> institution<br></li>
+<li> <code>from_rating</code>: The rating - out of 5 stars - for the <code>to_unitid</code> school scraped from the source website</li>
+<li> <code>to_rating</code>: The rating - out of 5 stars - for the <strong><em>similar</em></strong> school</li>
+</ol>
+
+<p>There already has been a <a href="https://scholar.google.com/scholar?q=graph+edge+link+prediction">ton of research</a> on the prediction of edges (links) in graphs, so my approach to this problem is only scratching the surface, and quite frankly, basic.</p>
+
+<p>Since we are trying to build a model that predicts if one school is defined as <strong>smililar</strong> to another, we need to remove a small portion of our dataset in order to validate the accuracy of that estimate.  </p>
+
+<p>The code below is how I randomly deleted a few edges from our graph in order to retain a test dataset</p>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## ensure that there are 25 rows for each school</span>
+tmp <span class="o">=</span> tbl_df<span class="p">(</span>edges<span class="p">)</span> <span class="o">%&gt;%</span> group_by<span class="p">(</span>from_unitid<span class="p">)</span> <span class="o">%&gt;%</span> summarise<span class="p">(</span>num <span class="o">=</span> <span class="kp">length</span><span class="p">(</span>to_unitid<span class="p">))</span>
+tmp <span class="o">=</span> filter<span class="p">(</span>tmp<span class="p">,</span> num <span class="o">==</span> <span class="m">25</span><span class="p">)</span>
+edges <span class="o">=</span> <span class="kp">subset</span><span class="p">(</span>edges<span class="p">,</span> from_unitid <span class="o">%in%</span> tmp<span class="o">$</span>from_unitid<span class="p">)</span>
+<span class="kp">rm</span><span class="p">(</span>tmp<span class="p">)</span>
+
+<span class="c1">## split into the traing and test dataset</span>
+ROWS <span class="o">=</span> <span class="kp">sample</span><span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="kp">nrow</span><span class="p">(</span>edges<span class="p">),</span> <span class="m">150</span><span class="p">,</span> replace<span class="o">=</span><span class="bp">F</span><span class="p">)</span>
+
+<span class="c1">## training graph</span>
+graph_test<span class="o">=</span> edges<span class="p">[</span>ROWS<span class="p">,</span> <span class="p">]</span>
+graph_train <span class="o">=</span> edges<span class="p">[</span><span class="o">-</span>ROWS<span class="p">,]</span>
+<span class="kp">rm</span><span class="p">(</span>ROWS<span class="p">)</span>
+
+<span class="c1">## how many unique schools in the test dataset</span>
+<span class="kp">length</span><span class="p">(</span><span class="kp">unique</span><span class="p">(</span>graph_test<span class="o">$</span>from_unitid<span class="p">))</span>
+<span class="kp">save</span><span class="p">(</span>graph_test<span class="p">,</span> graph_train<span class="p">,</span> edges<span class="p">,</span> file<span class="o">=</span><span class="s">&quot;data/graph-data.rdata&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2>Database Creation</h2>
+
+<p>The image below is how we are translating the data into a network graph.</p>
+
+<p><img src="http://btibert3.github.io/assets/school-data-model.png" alt="data-model"></p>
+
+<p>Our dataset is more comparable to Twitter than Facebook.  School 1 is similar to School 2, but School 2 isn&#39;t similar to School 1.  In graph terms, this is a directed network. Unlike Facebook, where users both agree to to a friendship, our dataset is comprised of connections between institutions that may not be reciprocated.  </p>
+
+<p>Because of this, we can start to map out the competitive landscape within higher education.  Even though the dataset comes from only one college search site, it&#39;s a start, and allows us to look at who are competitors are competing with.  That&#39;s some powerful stuff! </p>
+
+<p>Before we do any analysis, we need to put the data into Neo4j.</p>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## set the constraints first</span>
+addConstraint<span class="p">(</span>graph<span class="p">,</span> <span class="s">&quot;School&quot;</span><span class="p">,</span> <span class="s">&quot;unitid&quot;</span><span class="p">)</span>
+
+<span class="c1">## the query </span>
+query <span class="o">=</span> <span class="s">&quot;</span>
+<span class="s">MERGE (s1:School { unitid:{from_unitid} } )</span>
+<span class="s">ON CREATE SET s1.rating = {from_rating}</span>
+<span class="s">MERGE (s2:School { unitid:{to_unitid} } )</span>
+<span class="s">ON CREATE SET s2.rating = {to_rating}</span>
+<span class="s">CREATE (s1) -[r:SIMILAR_TO {rank:{from_rank}}]-&gt; (s2)</span>
+<span class="s">&quot;</span>
+
+<span class="c1">## start the initial transaction</span>
+tx <span class="o">=</span> newTransaction<span class="p">(</span>graph<span class="p">)</span>
+
+<span class="c1">## just using the small dataset for exploring and valid queries</span>
+start <span class="o">=</span> <span class="kp">Sys.time</span><span class="p">()</span>
+<span class="kr">for</span> <span class="p">(</span>i <span class="kr">in</span> <span class="m">1</span><span class="o">:</span><span class="kp">nrow</span><span class="p">(</span>graph_train<span class="p">))</span> <span class="p">{</span>
+ <span class="c1">## for every 500 rows, commit the transaction</span>
+ <span class="kr">if</span> <span class="p">(</span>i <span class="o">%%</span> <span class="m">500</span> <span class="o">==</span> <span class="m">0</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1"># commit the transaction</span>
+  commit<span class="p">(</span>tx<span class="p">)</span>
+  <span class="kp">cat</span><span class="p">(</span><span class="s">&quot;Batch &quot;</span><span class="p">,</span> i<span class="o">/</span><span class="m">500</span><span class="p">,</span> <span class="s">&quot; committed \n&quot;</span><span class="p">)</span>
+  <span class="c1"># open a new transaction</span>
+  tx <span class="o">=</span> newTransaction<span class="p">(</span>graph<span class="p">)</span>
+ <span class="p">}</span>
+
+ <span class="c1">## create the parameter values</span>
+ from_unitid <span class="o">=</span> graph_train<span class="p">[</span>i<span class="p">,</span> <span class="p">]</span><span class="o">$</span>from_unitid
+ from_rating <span class="o">=</span> graph_train<span class="p">[</span>i<span class="p">,</span> <span class="p">]</span><span class="o">$</span>from_rating
+ to_unitid <span class="o">=</span> graph_train<span class="p">[</span>i<span class="p">,</span> <span class="p">]</span><span class="o">$</span>to_unitid
+ to_rating <span class="o">=</span> graph_train<span class="p">[</span>i<span class="p">,</span> <span class="p">]</span><span class="o">$</span>to_rating
+ from_rank <span class="o">=</span> graph_train<span class="p">[</span>i<span class="p">,</span> <span class="p">]</span><span class="o">$</span>from_rank
+
+ <span class="c1">## appead the query</span>
+ appendCypher<span class="p">(</span>tx<span class="p">,</span> 
+              query<span class="p">,</span> 
+              from_unitid <span class="o">=</span> from_unitid<span class="p">,</span> 
+              from_rating <span class="o">=</span> from_rating<span class="p">,</span> 
+              to_unitid <span class="o">=</span> to_unitid<span class="p">,</span>
+              to_rating <span class="o">=</span> to_rating<span class="p">,</span>
+              from_rank <span class="o">=</span> from_rank<span class="p">)</span>
+<span class="p">}</span> <span class="c1">#endfor</span>
+
+<span class="c1">## committ the last transaction and record the time it takes</span>
+commit<span class="p">(</span>tx<span class="p">)</span>
+end <span class="o">=</span> <span class="kp">Sys.time</span><span class="p">()</span>
+end <span class="o">-</span> start
+</code></pre></div>
+<p>Using cypher transactions, as I did above, isn&#39;t the fastest way of getting data into Neo4j, but it&#39;s clean and easy to read.  For reference, it took a tad over 12 minutes to put our training dataset into the database.  </p>
+
+<p>If you need to throw larger volumes of data into the database, you should check out the shell tools that are part of the base install.  More specifically, <code>neo4j-shell</code> and <code>neo4j-import</code>.</p>
+
+<h2>Explore the data</h2>
+
+<p>Now let&#39;s confirm that we have some data.</p>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## make sure we are connected</span>
+graph <span class="o">=</span> startGraph<span class="p">(</span><span class="s">&quot;http://localhost:7474/db/data/&quot;</span><span class="p">)</span>
+
+<span class="c1">## the number of nodes</span>
+cypher<span class="p">(</span>graph<span class="p">,</span>
+       <span class="s">&quot;</span>
+<span class="s">       MATCH (n)</span>
+<span class="s">       RETURN COUNT(n) as `Total Nodes`</span>
+<span class="s">       &quot;</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">  Total Nodes
+1        3477
+</code></pre></div><div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## summary of the data model</span>
+<span class="kp">summary</span><span class="p">(</span>graph<span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">    This         To   That
+1 School SIMILAR_TO School
+</code></pre></div><div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## how many relationships</span>
+cypher<span class="p">(</span>graph<span class="p">,</span>
+       <span class="s">&quot;</span>
+<span class="s">       MATCH () -[r]- () </span>
+<span class="s">       WITH r </span>
+<span class="s">       RETURN type(r), count(*) as total</span>
+<span class="s">       &quot;</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">     type(r)  total
+1 SIMILAR_TO 161860
+</code></pre></div>
+<p>Finally, let&#39;s look at a quick plot from a small subset of the data</p>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## the query</span>
+query <span class="o">=</span> <span class="s">&quot;</span>
+<span class="s">MATCH (n)-[r]-&gt;(b)</span>
+<span class="s">RETURN n.unitid AS from, b.unitid AS to, r.rank AS rank</span>
+<span class="s">LIMIT 50</span>
+<span class="s">&quot;</span>
+
+<span class="c1">## the dataframe</span>
+dat <span class="o">=</span> cypher<span class="p">(</span>graph<span class="p">,</span> query<span class="p">)</span>
+dat<span class="o">$</span>rand <span class="o">=</span> <span class="kc">NULL</span>
+
+<span class="c1">## graph the dataframe</span>
+g <span class="o">=</span> graph.data.frame<span class="p">(</span>dat<span class="p">,</span> directed <span class="o">=</span> <span class="bp">T</span><span class="p">)</span>
+
+<span class="c1">## simple plot</span>
+ggnet<span class="p">(</span>g<span class="p">,</span> size<span class="o">=</span><span class="m">10</span><span class="p">)</span>
+</code></pre></div>
+<p><img src="http://btibert3.github.io/images/predict-competition-amongst-undergraduate-institutions-using-neo4j/netplot-1.png" alt="plot of chunk netplot"> </p>
+
+<p>The plot above just pulls out 50 nodes.  I won&#39;t go into describing the graph, but I find it interesting that there are two schools that are common to the larger clusters, but these two institutions are not <strong>similar</strong> to each other.</p>
+
+<h2>Predicting Edges</h2>
+
+<p>As mentioned above, I wanted to create a very basic predictive model to test if leveraging the structure of the graph is better than just guessing.</p>
+
+<p>I don&#39;t know if it&#39;s my machine, a sub-optimal <code>CYPHER</code> query, or simply the expected run-time, but generating the predictions for 150 schools took nearly two hours.  I have had much better performance on larger data, so something doesn&#39;t feel right here.</p>
+
+<p>Let&#39;s take a quick at the predictions to ensure the output matches our expectations.</p>
+
+<table><thead>
+<tr>
+<th style="text-align: left">from</th>
+<th style="text-align: right">freq</th>
+<th style="text-align: left">pred_school</th>
+</tr>
+</thead><tbody>
+<tr>
+<td style="text-align: left">218487</td>
+<td style="text-align: right">23</td>
+<td style="text-align: left">218964</td>
+</tr>
+<tr>
+<td style="text-align: left">138789</td>
+<td style="text-align: right">11</td>
+<td style="text-align: left">140322</td>
+</tr>
+<tr>
+<td style="text-align: left">220127</td>
+<td style="text-align: right">11</td>
+<td style="text-align: left">219602</td>
+</tr>
+<tr>
+<td style="text-align: left">420398</td>
+<td style="text-align: right">24</td>
+<td style="text-align: left">229027</td>
+</tr>
+<tr>
+<td style="text-align: left">244233</td>
+<td style="text-align: right">9</td>
+<td style="text-align: left">132471</td>
+</tr>
+<tr>
+<td style="text-align: left">196006</td>
+<td style="text-align: right">20</td>
+<td style="text-align: left">196176</td>
+</tr>
+</tbody></table>
+
+<p>Note that column <code>freq</code> is how many schools were included in the prediction.  If we wanted to extend this, a school can have up to 25 <code>SIMILAR</code> schools.  With this in hand, you could estimate a <code>confidence</code> of the prediction by <code>freq / 25</code>, or more accuractley, <code>freq / # Schools Similar to</code>.  This would yield a percentage, with numbers closer to 1 indicating that nearly all other schools have this recommendation as a competitor.</p>
+
+<p>We finally have what we need!</p>
+
+<h2>Results</h2>
+
+<p>Let&#39;s see how the recommendation did.</p>
+
+<p>First, in order to measure how well our simple model performs, we need to understand the <strong><em>compared to what</em></strong> question.  To create this baseline, we go back to our original dataset, identify the most popular schools, and then select the most popular insitution not already listed by the school of interest.  This is just a <code>Top-N</code> prediction.  </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">pop_accurate
+FALSE 
+  150 
+</code></pre></div>
+<p>From above, we can see that the <code>Top-N</code> prediction did not predict any connections correctly, as evidenced by the 150 underneath the <code>FALSE</code>.  In reality, if my test set was larger than 150 edges, undoubtedly we would have got a handful of correct guesses.  </p>
+
+<p>Now, let&#39;s look at the model.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">pred_accurate
+FALSE  TRUE 
+  105    45 
+</code></pre></div>
+<p>From above, we see that the model accurately predicted 45 of the 150 connections.  That is 30 % correct, not bad.</p>
+
+<h2>Summary</h2>
+
+<p>Overall, there is some evidence to suggest that the network structure of the competition higher ed can be leveraged to predict which schools compete with each other. The holdout sample of 150 cases wasn&#39;t that large, but predicting 30% of the cases with a very simple model isn&#39;t a bad start.  </p>
+
+<p>Neo4j is a pretty powerful database, but I still have a lot to learn.  Generating predictions (recommendations) for 150 cases shouldn&#39;t take nearly two hours.  This would never fly in a production environment, but as mentioend above, I suspect that there are some things that I can do on my end to greatly enhance performance.  In another study (not published), I was able to generate predictions for 1000 entities in less than ten minutes.  Neo4j admits that it&#39;s not an analytical engine, which is why there are some great tools being devolped on top, like <a href="https://github.com/kbastani/neo4j-mazerunner">Mazerunner</a> which aims to bring graph ETL capabilities to the database.</p>
+
+<p>Stepping back, I am excited to extend the use of Neo4j into other projects within Enrollment Management, as I strongly believe that analyzing our data in graph format can yield strategic insights above and beyond what we can already do with more traditional methods like regression, clustering, and machine learning.</p>
+
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'enrollmentnerdery'; // required: replace example with your forum shortname
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+</section>
+
+    </div>
+    <script src="/javascripts/scale.fix.js"></script>
+  </body>
+</html>

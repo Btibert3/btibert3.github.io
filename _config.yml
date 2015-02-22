@@ -1,0 +1,7 @@
+markdown: redcarpet
+redcarpet:
+  extensions: ["tables"]
+exclude: ["*.Rmd"]
+name: Brock Tibert
+description: Enrollment Nerdery
+url:  http://btibert3.github.io

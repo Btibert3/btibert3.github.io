@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Brock Tibert - Enrollment Nerdery</title>
+
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/styles.css">
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<div class="wrapper">
+  <header>
+    <h1><a href="http://btibert3.github.io"><b>Enrollment Nerdery</b></a></h1>
+    <p>
+    A place to collect my thoughts on data analysis within Enrollment Management. Dare I call it Enrollment Science?
+    </p>
+
+	<img src="/assets/cartoon.png" >
+	<br><br>
+	<p>Where you can find me<br>
+		<a href="https://github.com/btibert3" target="_blank">GitHub</a><br>
+		<a href="https://twitter.com/brocktibert" target="_blank">Twitter</a><br>
+		<a href="https://www.linkedin.com/in/brocktibert" target="_blank">LinkedIn</a><br>
+		<a href="mailto:btibert3@gmail.com">Email</a>
+	</p>
+
+  </header>
+
+<section>
+	<h1>Forecast College Enrollment</h1>
+
+<p>As of late, there has been a surge in conversation around the topic of
+the <code>college-going population</code> here in the United States.</p>
+
+<p>One one hand, we have long talked about the &quot;The Perfect Storm&quot; of
+demographics. For example, here is a simple <a href="http://goo.gl/T3OyCF">Google
+Search</a>. On the other, the decline in college
+enrollment, has been connected to changes in the <a href="http://fivethirtyeight.com/features/more-high-school-grads-decide-college-isnt-worth-it/">labor
+market</a>.</p>
+
+<p>In the end, it might be nice to review what data exist and highlight how
+these flashy headlines could have been predictable well in advance of
+2014.</p>
+
+<h2>About this post</h2>
+
+<p>For this post, I will be using using the <code>R</code> language to download the
+data from <a href="http://www.wiche.edu/knocking-8th">WICHE</a>, an amazing
+resource for projections of High School graduates by state. Using these
+data, we can do all sorts of fun analyses.</p>
+
+<p>In a future post, I will show you how to link WICHE to
+<a href="http://nces.ed.gov/ipeds">IPEDS</a> data in order to forecast college
+participation rates by state.</p>
+
+<p>While I will provide a few code snippets below, you should feel free to
+clone my <a href="https://github.com/Btibert3/Parse-WICHE">Github Repo</a> which
+everything you need to replicate this post.</p>
+
+<p>Also included is a Tableau Workbook. If you have Tableau Desktop, this
+super basic workbook highlights how you can leverage parameters to
+create your own forecasts.</p>
+
+<p>Below is a screenshot of the workbook, which is a basic &quot;Create-Your-Own
+College Enrollment Forecast&quot; of sorts.</p>
+
+<p><img src="https://raw.githubusercontent.com/Btibert3/Parse-WICHE/master/figs/Tableau.PNG" alt="Tableau-ss"></p>
+
+<h2>Why this post</h2>
+
+<p>The changing demographics and volume of students that would be
+considering a college education should not be news to anyone in
+Enrollment Management. I hope to highlight how with just a few lines of
+code, we can:</p>
+
+<ol>
+<li> Grab data that forecasts the volume of high school graduates</li>
+<li> Use <code>R</code> to parse, clean, and reshape the data (originally stored in
+Excel)</li>
+<li> Save out the data and leverage Tableau to do some basic forecasting</li>
+</ol>
+
+<p>For those of you that might be new to <code>R</code>, reading code can be extremely
+helpful when attempting to learn a new language. When possible, I always
+try to comment the heck of out my code. Hopefully these comments can
+help you in your journey.</p>
+
+<h2>Get the data</h2>
+
+<p>With <code>R</code>, it&#39;s super simple to grab data from the web. The command below
+will download the WICHE Excel Workbook.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">## download the dataset into your working directory
+## use mode option below so the file can open in R, error w/o it
+WICHE_DATA = &quot;http://wiche.edu/info/knocking-8th/tables/allProjections.xlsx&quot;
+download.file(url=WICHE_DATA, destfile=&quot;raw/wiche.xlsx&quot;, mode=&quot;wb&quot;)
+</code></pre></div>
+<p>It should be noted that the code above assumes that your current
+directory (where you are running the code) has a folder called <code>raw</code>. To
+assure that this is the case, just do this:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">## ensure that we have a directory to store the raw data
+if (!file.exists(&quot;raw&quot;)) dir.create(&quot;raw&quot;)
+if (!file.exists(&quot;figs&quot;)) dir.create(&quot;figs&quot;)
+</code></pre></div>
+<p>Now we can use the <code>RODBC</code> package (on Windows) to connect to the
+workbook and query it as if the sheets were database tables.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">xl = odbcConnectExcel2007(&quot;raw/wiche.xlsx&quot;)
+</code></pre></div>
+<p>Because each state is a tab in the workbook, let&#39;s use <code>R</code> to define an
+object that holds the state abbreivations, which we will use while
+looping through the workbook.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">## how cool is it that R has the State names and Abbreviations preloaded?
+?state.name
+(states = state.name)
+length(states)
+states = c(states, &quot;District of Columbia&quot;)
+</code></pre></div>
+<p>Finally, let&#39;s loop and build a dataset in the format we want:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">## use a for loop -- not ideal but easy to read and debug
+wiche = data.frame(stringsAsFactors=FALSE)
+for (state in states) {
+ raw = sqlFetch(xl, state, stringsAsFactors=FALSE)
+ ## bc there is a structure to each sheet, we can reference each column by index
+ ## no way is this ideal, but quick when data doesnt change
+ ROWS = 9:40
+ COLS = c(1, 3:10)
+ ## create a flag for actual/projected -- hard coded from looking at Excel file
+ status = c(rep(&quot;actual&quot;, 13), rep(&quot;projected&quot;, 19))
+ ## keep the data
+ df = raw[ROWS, COLS]
+ colnames(df) = c(&#39;year&#39;,
+                  &#39;pub_amind&#39;,
+                  &#39;pub_asian&#39;,
+                  &#39;pub_black&#39;,
+                  &#39;pub_hisp&#39;,
+                  &#39;pub_white&#39;,
+                  &#39;pub_total&#39;,
+                  &#39;np_total&#39;,
+                  &#39;total&#39;)
+ ## remove the commas -- using a for loop not ideal, but intuitive
+ for (i in 2:ncol(df)) {
+  df[,i] = as.numeric(gsub(&quot;,&quot;,&quot;&quot;, df[,i]))
+ }
+ df$state = state
+ df$status = status
+ ## bind onto the master data frame
+ wiche = rbind.fill(wiche, df)
+ ## status
+ cat(&quot;finished &quot;, state, &quot;\n&quot;)
+}
+</code></pre></div>
+<h2>A quick plot</h2>
+
+<p>When playing around with data, it&#39;s usually a good practice to visualize
+what you have. Below is a quick plot which represents both the actual
+and forecasted volume of high school graduates going until the 2027/28
+Academic year.</p>
+
+<p><img src="https://raw.githubusercontent.com/Btibert3/Parse-WICHE/master/figs/Total-HS-Grads.jpg" alt="plot"></p>
+
+<h2>Summary</h2>
+
+<p>I would encourage the reader to browse the code, and if possible, fire
+up the Tableau workbook. As an Enrollment Scientist, <code>R</code> and <code>Tableau</code>
+are my two tools that I use on a daily basis.</p>
+
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'enrollmentnerdery'; // required: replace example with your forum shortname
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+</section>
+
+    </div>
+    <script src="/javascripts/scale.fix.js"></script>
+  </body>
+</html>
