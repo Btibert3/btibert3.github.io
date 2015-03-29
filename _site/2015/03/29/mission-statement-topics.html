@@ -97,7 +97,7 @@
 
 <p>To make this analysis possible, I used <code>RNeo4j</code> to put these datasets into a <a href="http://en.wikipedia.org/wiki/Graph_(abstract_data_type)">graph</a>, using the data model shown below:</p>
 
-<p><img src="assets/mission-topic-data-model.png" alt="model"></p>
+<p><img src="http://btibert3.github.io/assets/mission-topic-data-model.png" alt="model"></p>
 
 <p>Our dataset has two types of nodes, <code>School</code> and <code>Topic</code>.  Schools are connected to topics through a <code>HAS_TOPIC</code> relationship, with a value that I assume is the API&#39;s confidence for the topic.  Schools are also connected to other Schools through a <code>SIMILAR_TO</code> relationship, with a rank value.  A rank of 1 implies the closest competitor.</p>
 

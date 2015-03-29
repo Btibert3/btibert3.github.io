@@ -60,7 +60,8 @@ It's worth noting that not all institutions will have competitive data.  This co
 
 To make this analysis possible, I used `RNeo4j` to put these datasets into a [graph](http://en.wikipedia.org/wiki/Graph_(abstract_data_type)), using the data model shown below:
 
-![model](assets/mission-topic-data-model.png)
+![model]({{ site.url }}/assets/mission-topic-data-model.png)
+
 
 Our dataset has two types of nodes, `School` and `Topic`.  Schools are connected to topics through a `HAS_TOPIC` relationship, with a value that I assume is the API's confidence for the topic.  Schools are also connected to other Schools through a `SIMILAR_TO` relationship, with a rank value.  A rank of 1 implies the closest competitor.
 
