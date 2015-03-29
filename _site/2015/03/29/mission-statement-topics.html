@@ -1,0 +1,659 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Brock Tibert - Enrollment Nerdery</title>
+
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/styles.css">
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<div class="wrapper">
+  <header>
+    <h1><a href="http://btibert3.github.io"><b>Enrollment Nerdery</b></a></h1>
+    <p>
+    A place to collect my thoughts on data analysis within Enrollment Management. Dare I call it Enrollment Science?
+    </p>
+
+	<img src="/assets/cartoon.png" >
+	<br><br>
+	<p>Where you can find me<br>
+		<a href="https://github.com/btibert3" target="_blank">GitHub</a><br>
+		<a href="https://twitter.com/brocktibert" target="_blank">Twitter</a><br>
+		<a href="https://www.linkedin.com/in/brocktibert" target="_blank">LinkedIn</a><br>
+		<a href="http://btibert3.github.io/resume/build/index.html" target="_blank">Resume</a><br>
+		<a href="mailto:btibert3@gmail.com">Email</a>
+	</p>
+
+  </header>
+
+<section>
+	<h2>TL:DR</h2>
+
+<p>Below I use Prismatic&#39;s API to tag the mission statements of approximately 500 colleges in the U.S. in order to evaluate the &quot;focus&quot; of each, which I define as the topics extracted from the API.  In addition, I also consider the competitive nature of various schools, commonly refered to as the &quot;Competitor Set&quot;.</p>
+
+<p>Out of the gate, I considered more than 1,000 schools for this study.  In the end, I only kept institutions with clean data, that is, no missing information across all of the data I collecteted.  Simply, I threw out a ton of data, but that&#39;s ok, this is more an exploration to think do the following:</p>
+
+<h4>How &quot;accurate&quot; is the Interest Graph prediction of the topics contained within the mission statements?</h4>
+
+<p>It&#39;s important to note that there are two sources of error; the API could mis-classify the mission statement, or perhaps the language of the mission statement is vague.</p>
+
+<h4>Are topics related to admissions performance?</h4>
+
+<p>This isn&#39;t really a pratical business problem, but hey, if we have the data, why not give it a shot?</p>
+
+<h2>Quick Side Note</h2>
+
+<p>This is intended to be a quick post on playing around with the recently released <a href="http://blog.getprismatic.com/interest-graph-api/">Prismatic Interest Graph API</a>.  I encourage you to take a few minutes to scan the blog post; very cool stuff!  </p>
+
+<p>For me, the timing couldn&#39;t be better, as I have been thinking alot about graphs in the recent months, and the idea of being to assign topics to text makes this all the better. </p>
+
+<blockquote>
+<p>As I am wrapping up the work on this post, I noticed they just enhanced the API to search for related topics.  Awesome! I put together a basic R Package <a href="https://github.com/Btibert3/prismaticR">prismaticR</a>.  Let me know what you think!</p>
+</blockquote>
+
+<p>I am going to use the API to extract topics from a fairly specific set of institutions&#39; mission statements.  Needless to say, a mission statement says a lot about an institution and what they stand for.  My idea is to use the API to extract the larger themes and see if the intent matches &quot;reality&quot;, as defined by the results of the API call.  </p>
+
+<ul>
+<li> What institutions tend to focus on the same topic?<br></li>
+<li> Are certain topics associated with &quot;higher profile&quot; institutions?<br></li>
+<li> Based on the topics extracted, is there evidence to suggest that some mission statements miss the mark?<br></li>
+</ul>
+
+<p>I encourage you to head over to my <a href="https://github.com/Btibert3">Github repo</a> to review my code where all data collect is done within R, no point-and-click necessary!  By no means is my code pristine, but hopefully it can help you out if you are learning R.</p>
+
+<h2>The Data</h2>
+
+<p>First, a talk about the schools that I am including in this work.  Here are my criteria:  </p>
+
+<ul>
+<li> The institution is located in the domestic US (and is not a military institution)<br></li>
+<li> Public 4-year and Private, 4-year not-for-private <strong>degree-granting</strong> institutions<br></li>
+<li> Enrolled more than 300 first-year students<br></li>
+</ul>
+
+<p>This is a pretty specific set of institutions, and certainly does not reflect the &quot;average&quot; college in the U.S, but my aim is to include as many &quot;traditional colleges and universities&quot; as possible.</p>
+
+<p>After getting this list of about 1,000 schools, I crawled each institutions&#39; <a href="http://nces.ed.gov/collegenavigator/">College Navigator</a> page to parse out URL for their mission statement.  Not all institutions present a URL, so I removed any institution that included a mission statement in text-form on the profile page.  I know this isn&#39;t ideal, but I wanted to throw data together quickly.</p>
+
+<p>From there, I used the Interest Graph API to tag each mission statement with predicted &quot;topics.&quot;  The API was able to make successful requests on a large number of pages, but there were a handful of instances where the API returned null results, or more likely, the API was not able to extract topics due to insuffient text.  I also removed these schools from consideration.</p>
+
+<p>Next, I grabbed some basic admission metrics for these schools from IPEDS.  More specifically, I included things like admit rate (the % of applicants that were offered admission), SAT metrics, and school size.  There are a few other data points, so take a look at my code to see which IPEDS variables I included.  I didn&#39;t want to go down the rabbit&#39;s hole and analyze every metric, but I grabbed a handful available just in case.</p>
+
+<p>Lastly, of those institutions that &quot;made the cut&quot;, I included what some might consder their competitive set.  A few notes on this:</p>
+
+<ul>
+<li> I crawled a popular college search site to extract each institution&#39;s &quot;Similar&quot; colleges.  It&#39;s just one source of data, but they seem ok to me.<br></li>
+<li> Again, I only included the competitive information for the schools that had complete data from above</li>
+</ul>
+
+<p>It&#39;s worth noting that not all institutions will have competitive data.  This could be due to the fact that my crawler didn&#39;t parse everything properly, or, the site did not display this information, which I verififed on a few of the cases.</p>
+
+<p>To make this analysis possible, I used <code>RNeo4j</code> to put these datasets into a <a href="http://en.wikipedia.org/wiki/Graph_(abstract_data_type)">graph</a>, using the data model shown below:</p>
+
+<p><img src="assets/mission-topic-data-model.png" alt="model"></p>
+
+<p>Our dataset has two types of nodes, <code>School</code> and <code>Topic</code>.  Schools are connected to topics through a <code>HAS_TOPIC</code> relationship, with a value that I assume is the API&#39;s confidence for the topic.  Schools are also connected to other Schools through a <code>SIMILAR_TO</code> relationship, with a rank value.  A rank of 1 implies the closest competitor.</p>
+
+<h2>Descriptive Stats</h2>
+
+<p>Here are some quick cypher queries to explore the data we have loaded into the database.</p>
+
+<h5>Summary of the graph</h5>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="kp">summary</span><span class="p">(</span>graph<span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">    This         To   That
+1 School  HAS_TOPIC  Topic
+2 School SIMILAR_TO School
+</code></pre></div>
+<h6>How many nodes are in the database</h6>
+<div class="highlight"><pre><code class="language-r" data-lang="r">cypher<span class="p">(</span>graph<span class="p">,</span> <span class="s">&quot;MATCH (n) RETURN COUNT(n)&quot;</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">  COUNT(n)
+1      803
+</code></pre></div>
+<h6>Count of distinct node types</h6>
+<div class="highlight"><pre><code class="language-r" data-lang="r">query <span class="o">=</span> <span class="s">&quot;</span>
+<span class="s">// counts by distinct node type</span>
+<span class="s">MATCH n </span>
+<span class="s">RETURN DISTINCT LABELS(n), COUNT(n)</span>
+<span class="s">&quot;</span>
+cypher<span class="p">(</span>graph<span class="p">,</span> query<span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">  LABELS(n) COUNT(n)
+1     Topic      319
+2    School      484
+</code></pre></div>
+<h6>Count of relationship types</h6>
+<div class="highlight"><pre><code class="language-r" data-lang="r">cypher<span class="p">(</span>graph<span class="p">,</span> <span class="s">&quot;MATCH ()-[r]-&gt;() RETURN type(r), count(*)&quot;</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">     type(r) count(*)
+1  HAS_TOPIC     2701
+2 SIMILAR_TO     5468
+</code></pre></div>
+<h2>Explore the Graph</h2>
+
+<p>The table below shows 10 rows of data were schools are connected to topics.</p>
+
+<table><thead>
+<tr>
+<th style="text-align: center">school</th>
+<th style="text-align: center">name</th>
+<th style="text-align: center">topic</th>
+<th style="text-align: center">score</th>
+</tr>
+</thead><tbody>
+<tr>
+<td style="text-align: center">100663</td>
+<td style="text-align: center">University of Alabama at Birmingham</td>
+<td style="text-align: center">Budgets and Budgeting</td>
+<td style="text-align: center">0.5017</td>
+</tr>
+<tr>
+<td style="text-align: center">100663</td>
+<td style="text-align: center">University of Alabama at Birmingham</td>
+<td style="text-align: center">Birmingham, Alabama</td>
+<td style="text-align: center">0.5091</td>
+</tr>
+<tr>
+<td style="text-align: center">100663</td>
+<td style="text-align: center">University of Alabama at Birmingham</td>
+<td style="text-align: center">Higher Education</td>
+<td style="text-align: center">0.5124</td>
+</tr>
+<tr>
+<td style="text-align: center">100663</td>
+<td style="text-align: center">University of Alabama at Birmingham</td>
+<td style="text-align: center">Colleges and Universities</td>
+<td style="text-align: center">0.5603</td>
+</tr>
+<tr>
+<td style="text-align: center">100751</td>
+<td style="text-align: center">The University of Alabama</td>
+<td style="text-align: center">Colleges and Universities</td>
+<td style="text-align: center">0.6104</td>
+</tr>
+<tr>
+<td style="text-align: center">100751</td>
+<td style="text-align: center">The University of Alabama</td>
+<td style="text-align: center">Alabama</td>
+<td style="text-align: center">0.6066</td>
+</tr>
+<tr>
+<td style="text-align: center">100751</td>
+<td style="text-align: center">The University of Alabama</td>
+<td style="text-align: center">Mobile, Alabama</td>
+<td style="text-align: center">0.5434</td>
+</tr>
+<tr>
+<td style="text-align: center">100751</td>
+<td style="text-align: center">The University of Alabama</td>
+<td style="text-align: center">Research</td>
+<td style="text-align: center">0.5433</td>
+</tr>
+<tr>
+<td style="text-align: center">100751</td>
+<td style="text-align: center">The University of Alabama</td>
+<td style="text-align: center">Higher Education</td>
+<td style="text-align: center">0.5294</td>
+</tr>
+<tr>
+<td style="text-align: center">100751</td>
+<td style="text-align: center">The University of Alabama</td>
+<td style="text-align: center">Montgomery, Alabama</td>
+<td style="text-align: center">0.5261</td>
+</tr>
+</tbody></table>
+
+<p>It&#39;s important to note that this is only half the picture.  If you refer back to the graph model above, notice that we are only looking at the connections between <code>School</code> and <code>Topic</code>, when in reality, we also have edges between <code>School</code> and <code>School</code>.  This is demonstrated below.</p>
+
+<table><thead>
+<tr>
+<th style="text-align: center">From School</th>
+<th style="text-align: center">To School</th>
+<th style="text-align: center">Rank</th>
+</tr>
+</thead><tbody>
+<tr>
+<td style="text-align: center">University of Alabama at Birmingham</td>
+<td style="text-align: center">The University of Alabama</td>
+<td style="text-align: center">1</td>
+</tr>
+<tr>
+<td style="text-align: center">University of Alabama at Birmingham</td>
+<td style="text-align: center">Auburn University</td>
+<td style="text-align: center">2</td>
+</tr>
+<tr>
+<td style="text-align: center">University of Alabama at Birmingham</td>
+<td style="text-align: center">University of South Alabama</td>
+<td style="text-align: center">3</td>
+</tr>
+<tr>
+<td style="text-align: center">University of Alabama at Birmingham</td>
+<td style="text-align: center">Jacksonville State University</td>
+<td style="text-align: center">6</td>
+</tr>
+<tr>
+<td style="text-align: center">University of Alabama at Birmingham</td>
+<td style="text-align: center">University of North Alabama</td>
+<td style="text-align: center">10</td>
+</tr>
+<tr>
+<td style="text-align: center">University of Alabama at Birmingham</td>
+<td style="text-align: center">Mississippi State University</td>
+<td style="text-align: center">13</td>
+</tr>
+<tr>
+<td style="text-align: center">University of Alabama at Birmingham</td>
+<td style="text-align: center">University of Montevallo</td>
+<td style="text-align: center">16</td>
+</tr>
+<tr>
+<td style="text-align: center">University of Alabama at Birmingham</td>
+<td style="text-align: center">University of Mississippi</td>
+<td style="text-align: center">18</td>
+</tr>
+<tr>
+<td style="text-align: center">University of Alabama at Birmingham</td>
+<td style="text-align: center">The University of Tennessee-Knoxville</td>
+<td style="text-align: center">21</td>
+</tr>
+<tr>
+<td style="text-align: center">University of Alabama at Birmingham</td>
+<td style="text-align: center">Florida State University</td>
+<td style="text-align: center">22</td>
+</tr>
+</tbody></table>
+
+<p>In the table above, we are looking at the connections between schools, where <code>From</code> is considered <code>SIMILAR_TO</code> <code>To</code>.  The column rank indicates competitor strength, where Rank 1 is considered he most &quot;similar&quot; school.  We could debate the definition of &quot;similar&quot; all day long, so I will spare that for a later blog post.</p>
+
+<p>It might help to put a picture to the data ...</p>
+
+<p><img src="http://btibert3.github.io/images/mission-statement-topics-unnamed-chunk-8-1.png" alt="plot of chunk unnamed-chunk-8"> </p>
+
+<p>While you can already start to see some interesting patterns, we are only viewing this graph as if there were only one node type ...  </p>
+
+<p><img src="http://btibert3.github.io/images/mission-statement-topics-unnamed-chunk-9-1.png" alt="plot of chunk unnamed-chunk-9"> </p>
+
+<p>In the plot above, for the nodes when doing a before-and-after plot, but I am not sure how you can accomplish that with using <code>ggnet</code>.  </p>
+
+<p>Regardless, I hope the second plot - the same graph as above - starts to paint a picture of the type of data we can play around with.  </p>
+
+<h2>Analysis</h2>
+
+<p>Let&#39;s start to ask some questions from the database. </p>
+
+<h5>Topic Distribution</h5>
+
+<p>What are the most popular topics?  The percentage indicates the fraction of mission statements having that topic.  100% would indicate every mission statement was tagged with that topic by the API.  </p>
+
+<table><thead>
+<tr>
+<th style="text-align: center">Topic</th>
+<th style="text-align: center">Times_Listed</th>
+<th style="text-align: center">Pct_Listed</th>
+</tr>
+</thead><tbody>
+<tr>
+<td style="text-align: center">Colleges and Universities</td>
+<td style="text-align: center">366</td>
+<td style="text-align: center">0.7562</td>
+</tr>
+<tr>
+<td style="text-align: center">Higher Education</td>
+<td style="text-align: center">291</td>
+<td style="text-align: center">0.6012</td>
+</tr>
+<tr>
+<td style="text-align: center">International Education</td>
+<td style="text-align: center">157</td>
+<td style="text-align: center">0.3244</td>
+</tr>
+<tr>
+<td style="text-align: center">Graduate Schools and Students</td>
+<td style="text-align: center">124</td>
+<td style="text-align: center">0.2562</td>
+</tr>
+<tr>
+<td style="text-align: center">Academic Freedom</td>
+<td style="text-align: center">95</td>
+<td style="text-align: center">0.1963</td>
+</tr>
+<tr>
+<td style="text-align: center">Education</td>
+<td style="text-align: center">94</td>
+<td style="text-align: center">0.1942</td>
+</tr>
+<tr>
+<td style="text-align: center">Education Reform</td>
+<td style="text-align: center">89</td>
+<td style="text-align: center">0.1839</td>
+</tr>
+<tr>
+<td style="text-align: center">Humanities</td>
+<td style="text-align: center">87</td>
+<td style="text-align: center">0.1798</td>
+</tr>
+<tr>
+<td style="text-align: center">Community Colleges</td>
+<td style="text-align: center">73</td>
+<td style="text-align: center">0.1508</td>
+</tr>
+<tr>
+<td style="text-align: center">Education and Schools</td>
+<td style="text-align: center">67</td>
+<td style="text-align: center">0.1384</td>
+</tr>
+</tbody></table>
+
+<p>You can see that even in the top 10, the concentration of topics starts to fall off fast.  For example, of the 484 schools in the dataset, approximately 80% had language in the mission statement that API clearly understood as being about Colleges and Universities.  Education, ranked 6th, was tagged in 94 mission statements, or just under 1 in every 5 schools.  </p>
+
+<p>To me, this highlights that each mission statement has a focus, which is a good thing, but it might help to understand topic assignment.  How many topics are typically included in an institution&#39;s mission statement?</p>
+
+<p><img src="http://btibert3.github.io/images/mission-statement-topics-unnamed-chunk-11-1.png" alt="plot of chunk unnamed-chunk-11"> </p>
+
+<p>The mission statements had up to 7 topics, with the majority of schools being tagged 7 times by the API.  </p>
+
+<h4>What now?</h4>
+
+<p>We can see that a large share of the schools&#39;s mission statements were tagged with 7 topics.  Given what we have just seen, two interesting questions have emerged.</p>
+
+<ol>
+<li> What is it about the insitutions that <strong>do not</strong> clearly write their mission statements in a way that the API would not identify the core higher ed topics?<br></li>
+<li> Are there relationships between topics and admission performance and/or an institituion&#39;s competitive set.  More specifically, do institutions competing with one another have similar missions?  If we can extract the topics to understand the focus of an insitituion, is there evendince that some schools do better than others?</li>
+</ol>
+
+<h2>Basic Admission Stats for the Top 10 Topics</h2>
+
+<p>For simplicity sake, let&#39;s limit the admissions performance to the top 10 topics.</p>
+
+<table><thead>
+<tr>
+<th style="text-align: center">Topic</th>
+<th style="text-align: center">ape</th>
+<th style="text-align: center">sat75</th>
+<th style="text-align: center">iqr</th>
+<th style="text-align: center">apps</th>
+<th style="text-align: center">enrollment</th>
+<th style="text-align: center">total</th>
+</tr>
+</thead><tbody>
+<tr>
+<td style="text-align: center">Colleges and Universities</td>
+<td style="text-align: center">6.678</td>
+<td style="text-align: center">1189</td>
+<td style="text-align: center">209.9</td>
+<td style="text-align: center">8736</td>
+<td style="text-align: center">1425</td>
+<td style="text-align: center">366</td>
+</tr>
+<tr>
+<td style="text-align: center">Higher Education</td>
+<td style="text-align: center">6.502</td>
+<td style="text-align: center">1178</td>
+<td style="text-align: center">210.2</td>
+<td style="text-align: center">9240</td>
+<td style="text-align: center">1520</td>
+<td style="text-align: center">291</td>
+</tr>
+<tr>
+<td style="text-align: center">International Education</td>
+<td style="text-align: center">6.238</td>
+<td style="text-align: center">1166</td>
+<td style="text-align: center">208.2</td>
+<td style="text-align: center">8869</td>
+<td style="text-align: center">1528</td>
+<td style="text-align: center">157</td>
+</tr>
+<tr>
+<td style="text-align: center">Graduate Schools and Students</td>
+<td style="text-align: center">6.884</td>
+<td style="text-align: center">1172</td>
+<td style="text-align: center">209.1</td>
+<td style="text-align: center">9083</td>
+<td style="text-align: center">1332</td>
+<td style="text-align: center">124</td>
+</tr>
+<tr>
+<td style="text-align: center">Academic Freedom</td>
+<td style="text-align: center">7.002</td>
+<td style="text-align: center">1215</td>
+<td style="text-align: center">209.4</td>
+<td style="text-align: center">11395</td>
+<td style="text-align: center">1633</td>
+<td style="text-align: center">95</td>
+</tr>
+<tr>
+<td style="text-align: center">Education</td>
+<td style="text-align: center">7.53</td>
+<td style="text-align: center">1203</td>
+<td style="text-align: center">205</td>
+<td style="text-align: center">8423</td>
+<td style="text-align: center">1187</td>
+<td style="text-align: center">94</td>
+</tr>
+<tr>
+<td style="text-align: center">Education Reform</td>
+<td style="text-align: center">7.123</td>
+<td style="text-align: center">1209</td>
+<td style="text-align: center">203.5</td>
+<td style="text-align: center">7463</td>
+<td style="text-align: center">1114</td>
+<td style="text-align: center">89</td>
+</tr>
+<tr>
+<td style="text-align: center">Humanities</td>
+<td style="text-align: center">7.402</td>
+<td style="text-align: center">1242</td>
+<td style="text-align: center">209.5</td>
+<td style="text-align: center">10715</td>
+<td style="text-align: center">1455</td>
+<td style="text-align: center">87</td>
+</tr>
+<tr>
+<td style="text-align: center">Community Colleges</td>
+<td style="text-align: center">7.607</td>
+<td style="text-align: center">1203</td>
+<td style="text-align: center">203.9</td>
+<td style="text-align: center">5931</td>
+<td style="text-align: center">854.1</td>
+<td style="text-align: center">73</td>
+</tr>
+<tr>
+<td style="text-align: center">Education and Schools</td>
+<td style="text-align: center">5.97</td>
+<td style="text-align: center">1154</td>
+<td style="text-align: center">211.1</td>
+<td style="text-align: center">7428</td>
+<td style="text-align: center">1326</td>
+<td style="text-align: center">67</td>
+</tr>
+</tbody></table>
+
+<p>For reference:</p>
+
+<ul>
+<li><code>ape</code> = # applications per enrolled student</li>
+<li><code>sat75</code> = the 75th percentile for students submitting the SAT<br></li>
+<li><code>iqr</code> = the middle 50% based on the SAT 75th and 25th percentiles<br></li>
+<li><code>apps</code> = number of first year applications<br></li>
+<li><code>enrollment</code> = number of first year students enrolled<br></li>
+<li><code>total</code> = the number of schools whose mission statement was determined to have this topic by the Prismatic Interest Graph API<br></li>
+</ul>
+
+<p>I fully admit that you should take extreme caution when trying to use the results of the API for anything other than exploratory at this point.  First off, admittedly Prismatic says that their API is in <strong>ALPHA</strong> phase.  </p>
+
+<h2>Top 2 Topics</h2>
+
+<p>The query below puts the schools into one of two buckets; whether or not their mission statement was tagged with one of the top 2 topics.</p>
+
+<ol>
+<li> Colleges and Universities, or</li>
+<li> Higher Education</li>
+</ol>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## the query</span>
+query <span class="o">=</span> <span class="s">&quot;</span>
+<span class="s">MATCH (s1:School) -[r1:HAS_TOPIC]-&gt; (t1:Topic)</span>
+<span class="s">WHERE EXISTS((s1)-[:HAS_TOPIC]-&gt;(:Topic {topic:&#39;Colleges and Universities&#39;})) OR </span>
+<span class="s">      EXISTS((s1)-[:HAS_TOPIC]-&gt;(:Topic {topic:&#39;Higher Education&#39;}))</span>
+<span class="s">RETURN &#39;has topic&#39; as topic,</span>
+<span class="s">       avg(s1.ape) as ape, </span>
+<span class="s">       avg(s1.sat75) as sat75,</span>
+<span class="s">       avg(s1.iqr) as iqr,</span>
+<span class="s">       avg(s1.applcn) as apps,</span>
+<span class="s">       avg(s1.enrlft) as enrollment,</span>
+<span class="s">       count(DISTINCT s1) as total_rels</span>
+
+<span class="s">UNION</span>
+
+<span class="s">MATCH (s2:School) -[r2:HAS_TOPIC]-&gt; (t2:Topic)</span>
+<span class="s">WHERE NOT(EXISTS((s2)-[:HAS_TOPIC]-&gt;(:Topic {topic:&#39;Colleges and Universities&#39;})) OR </span>
+<span class="s">      EXISTS((s2)-[:HAS_TOPIC]-&gt;(:Topic {topic:&#39;Higher Education&#39;})))</span>
+<span class="s">RETURN &#39;no topic&#39; as topic,</span>
+<span class="s">       avg(s2.ape) as ape, </span>
+<span class="s">       avg(s2.sat75) as sat75,</span>
+<span class="s">       avg(s2.iqr) as iqr,</span>
+<span class="s">       avg(s2.applcn) as apps,</span>
+<span class="s">       avg(s2.enrlft) as enrollment,</span>
+<span class="s">       count(DISTINCT s2) as total_rels</span>
+<span class="s">&quot;</span>
+dat <span class="o">=</span> cypher<span class="p">(</span>graph<span class="p">,</span> query<span class="p">)</span>
+pander<span class="p">(</span>dat<span class="p">)</span>
+</code></pre></div>
+<table><thead>
+<tr>
+<th style="text-align: center">topic</th>
+<th style="text-align: center">ape</th>
+<th style="text-align: center">sat75</th>
+<th style="text-align: center">iqr</th>
+<th style="text-align: center">apps</th>
+<th style="text-align: center">enrollment</th>
+<th style="text-align: center">total_rels</th>
+</tr>
+</thead><tbody>
+<tr>
+<td style="text-align: center">has topic</td>
+<td style="text-align: center">6.667</td>
+<td style="text-align: center">1188</td>
+<td style="text-align: center">210.8</td>
+<td style="text-align: center">9070</td>
+<td style="text-align: center">1451</td>
+<td style="text-align: center">394</td>
+</tr>
+<tr>
+<td style="text-align: center">no topic</td>
+<td style="text-align: center">6.507</td>
+<td style="text-align: center">1208</td>
+<td style="text-align: center">217.8</td>
+<td style="text-align: center">7599</td>
+<td style="text-align: center">1317</td>
+<td style="text-align: center">90</td>
+</tr>
+</tbody></table>
+
+<ul>
+<li><code>has_topic</code> = institutions where the mission statement includes the topics above<br></li>
+<li><code>no_topic</code> = the institutions were not connected to those topics</li>
+</ul>
+
+<p>While the stats are just in aggregate, but there is bit of a gap in the 75th percentile scores, as well as a gap of 1600 more apps on average.  There is certainly more that you could do with this, but I just wanted to highlight one way you could slice the data.</p>
+
+<h2>School Competition and Mission Statement Topics</h2>
+
+<p>I wanted to highlight how easy it is to answer some really complex questions using Neo4j.  The table below looks isolates Harvard, finds the institutions which they are <code>SIMILAR_TO</code>, and collects the topics found within each school&#39;s mission statements.  </p>
+<div class="highlight"><pre><code class="language-r" data-lang="r">query <span class="o">=</span> <span class="s">&quot;</span>
+<span class="s">MATCH (s:School {unitid: 166027}) -[:HAS_TOPIC]-&gt; (t:Topic)</span>
+<span class="s">RETURN s.instnm as school, COLLECT(t.topic) as topics</span>
+
+<span class="s">UNION</span>
+
+<span class="s">MATCH (s:School)-[:SIMILAR_TO]-&gt;(y:School)-[:HAS_TOPIC]-&gt;(t:Topic)</span>
+<span class="s">WHERE s.unitid = 166027</span>
+<span class="s">RETURN y.instnm as school, COLLECT(t.topic) as topics</span>
+<span class="s">&quot;</span>
+
+dat <span class="o">=</span> cypher<span class="p">(</span>graph<span class="p">,</span> query<span class="p">)</span>
+pander<span class="p">(</span>dat<span class="p">)</span>
+</code></pre></div>
+<table><thead>
+<tr>
+<th style="text-align: center">school</th>
+<th style="text-align: center">topics</th>
+</tr>
+</thead><tbody>
+<tr>
+<td style="text-align: center">Harvard University</td>
+<td style="text-align: center">Harvard University, Colleges and Universities, Education Reform, Higher Education, Graduate Schools and Students, Ivy League, Scholarships and Fellowships</td>
+</tr>
+<tr>
+<td style="text-align: center">Duke University</td>
+<td style="text-align: center">Duke University, Education, Medicine, Adult Education, Colleges and Universities</td>
+</tr>
+<tr>
+<td style="text-align: center">Dartmouth College</td>
+<td style="text-align: center">Colleges and Universities, Ivy League, International Education, Culture, Community Colleges, The New School, Graduate Schools and Students</td>
+</tr>
+<tr>
+<td style="text-align: center">Georgetown University</td>
+<td style="text-align: center">Colleges and Universities, Georgetown University</td>
+</tr>
+<tr>
+<td style="text-align: center">Massachusetts Institute of Technology</td>
+<td style="text-align: center">Humanities, Graduate Schools and Students, Environmental Science, Education, Colleges and Universities, Higher Education, Massachusetts Institute of Technology</td>
+</tr>
+<tr>
+<td style="text-align: center">Princeton University</td>
+<td style="text-align: center">Higher Education, Colleges and Universities, Humanities, Academic Freedom, Environmental Science, Library Science</td>
+</tr>
+<tr>
+<td style="text-align: center">University of California-Los Angeles</td>
+<td style="text-align: center">Academic Freedom, Higher Education, Humanities, Society, Research, Education, Gender</td>
+</tr>
+<tr>
+<td style="text-align: center">Cornell University</td>
+<td style="text-align: center">Colleges and Universities, Humanities, Academic Freedom, Higher Education, International Education, Culture, Gold Standard</td>
+</tr>
+<tr>
+<td style="text-align: center">University of Pennsylvania</td>
+<td style="text-align: center">University of Pennsylvania, Pennsylvania, Pittsburgh, Pennsylvania</td>
+</tr>
+<tr>
+<td style="text-align: center">Boston University</td>
+<td style="text-align: center">International Education, Colleges and Universities, Boston, Scholarships and Fellowships, Academic Freedom</td>
+</tr>
+<tr>
+<td style="text-align: center">Carnegie Mellon University</td>
+<td style="text-align: center">Carnegie Mellon University, Creativity</td>
+</tr>
+</tbody></table>
+
+<p>I find it interesting that in some cases, the institution itself is a topic within the Prismatic API.</p>
+
+<h2>Summary</h2>
+
+<p>I am still new to Neo4j to solve business problems, but hopefully you found at least some part of this post intersting or helpful.  Admittedly there isn&#39;t a lot of practical use-cases shown above, but the Prismatic API and Neo4j are fun to play around with.</p>
+
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'enrollmentnerdery'; // required: replace example with your forum shortname
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+</section>
+
+    </div>
+    <script src="/javascripts/scale.fix.js"></script>
+  </body>
+</html>
