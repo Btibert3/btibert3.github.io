@@ -12,7 +12,7 @@ comments: true
 
 The Prismatic Team has slowly been rolling out a very cool API.  You can read all about it [here](https://github.com/Prismatic/interest-graph).  At the same time, I have been using this as an opportunity to learn how to create an R package.  
 
-After today's API update to identify the relevant content related to a specific topic, I wanted to highlight what is possible with a few lines of code using the `prismaticR` package.  Needless to say, my package is raw, but I wanted to highlight some of the cool things that you can do with Prismatic's API.  
+After today's API update to identify the relevant content related to a specific topic, I wanted to highlight what is possible with a few lines of code using the `prismaticR` package.  Needless to say, my package is raw, but I wanted to demonstrate some of the cool things that you can do with Prismatic's API.  
 
 ## Let's get started
 
