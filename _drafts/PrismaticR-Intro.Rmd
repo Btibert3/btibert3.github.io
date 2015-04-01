@@ -61,7 +61,7 @@ TOKEN = "YOUR_TOKEN_HERE"
 ```
 
 ```{r echo=FALSE}
-TOKEN = "MTQyMzQwOTM4MzUxOA.cHJvZA.YnRpYmVydDNAZ21haWwuY29t.Vz2n7Zd1ks8UZ4j9fDpU3MWVogk"
+TOKEN = ""
 ```
 
 
