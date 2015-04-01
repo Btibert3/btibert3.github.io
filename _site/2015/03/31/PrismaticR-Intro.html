@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Brock Tibert - Enrollment Nerdery</title>
+
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/styles.css">
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<div class="wrapper">
+  <header>
+    <h1><a href="http://btibert3.github.io"><b>Enrollment Nerdery</b></a></h1>
+    <p>
+    A place to collect my thoughts on data analysis within Enrollment Management. Dare I call it Enrollment Science?
+    </p>
+
+	<img src="/assets/cartoon.png" >
+	<br><br>
+	<p>Where you can find me<br>
+		<a href="https://github.com/btibert3" target="_blank">GitHub</a><br>
+		<a href="https://twitter.com/brocktibert" target="_blank">Twitter</a><br>
+		<a href="https://www.linkedin.com/in/brocktibert" target="_blank">LinkedIn</a><br>
+		<a href="http://btibert3.github.io/resume/build/index.html" target="_blank">Resume</a><br>
+		<a href="mailto:btibert3@gmail.com">Email</a>
+	</p>
+
+  </header>
+
+<section>
+	<h1>Playing Around with the Prismatic Topic Graph API using R</h1>
+
+<p>The Prismatic Team has slowly been rolling out a very cool API.  You can read all about it <a href="https://github.com/Prismatic/interest-graph">here</a>.  At the same time, I have been using this as an opportunity to learn how to create an R package.  </p>
+
+<p>After today&#39;s API update to identify the relevant content related to a specific topic, I wanted to highlight what is possible with a few lines of code using the <code>prismaticR</code> package.  Needless to say, my package is raw, but I wanted to highlight some of the cool things that you can do with Prismatic&#39;s API.  </p>
+
+<h2>Let&#39;s get started</h2>
+
+<p>First things first, you can use <code>devtools</code> to install the <code>prismaticR</code> package.  </p>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## install devtools package -- uncomment line below if you need to install</span>
+<span class="c1"># install.packages(&quot;devtools&quot;)</span>
+<span class="kn">library</span><span class="p">(</span>devtools<span class="p">)</span>
+
+<span class="c1">## install my prismaticR package if you havent already</span>
+install_github<span class="p">(</span><span class="s">&quot;btibert3/prismaticR&quot;</span><span class="p">)</span>
+
+<span class="c1">## now lets load it</span>
+<span class="kn">library</span><span class="p">(</span>prismaticR<span class="p">)</span>
+</code></pre></div>
+<p>Before you move forward, you will need to get an API token for your calls.  <a href="http://interest-graph.getprismatic.com/">You can get that token here</a>.</p>
+
+<p>Store your token in an object called TOKEN ...</p>
+<div class="highlight"><pre><code class="language-r" data-lang="r">TOKEN <span class="o">=</span> <span class="s">&quot;YOUR_TOKEN_HERE&quot;</span>
+</code></pre></div>
+<h2>Explore the API</h2>
+
+<p>The first thing that we should do is crawl the topic id database.  We will use this later ...</p>
+<div class="highlight"><pre><code class="language-r" data-lang="r">tids <span class="o">=</span> prizTID<span class="p">()</span>
+
+<span class="c1"># ## keep everything lower case </span>
+tids<span class="o">$</span>topic <span class="o">=</span> <span class="kp">tolower</span><span class="p">(</span>tids<span class="o">$</span>topic<span class="p">)</span>
+</code></pre></div>
+<p>We can use the <code>stringr</code> package to filter topic names based on keywords of interest.  For example, how many of the topics include the term <code>admission</code>   </p>
+<div class="highlight"><pre><code class="language-r" data-lang="r">tids<span class="p">[</span>str_detect<span class="p">(</span>tids<span class="o">$</span>topic<span class="p">,</span> <span class="s">&quot;admission&quot;</span><span class="p">),]</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">     id              topic
+993 993 college admissions
+</code></pre></div>
+<p>A broader keyword ...</p>
+<div class="highlight"><pre><code class="language-r" data-lang="r">tids<span class="p">[</span>str_detect<span class="p">(</span>tids<span class="o">$</span>topic<span class="p">,</span> <span class="s">&quot;higher ed&quot;</span><span class="p">),]</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">       id            topic
+1929 1929 higher education
+</code></pre></div>
+<p>How about college?</p>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="kp">head</span><span class="p">(</span>tids<span class="p">[</span>str_detect<span class="p">(</span>tids<span class="o">$</span>topic<span class="p">,</span> <span class="s">&quot;college&quot;</span><span class="p">),],</span> <span class="m">10</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">     id                          topic
+182 182                amherst college
+433 433                   bard college
+434 434                barnard college
+447 447                 baruch college
+592 592                 boston college
+593 593 boston college eagles football
+605 605                bowdoin college
+659 659               brooklyn college
+993 993             college admissions
+994 994              college athletics
+</code></pre></div>
+<p>And university? ..</p>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="kp">head</span><span class="p">(</span>tids<span class="p">[</span>str_detect<span class="p">(</span>tids<span class="o">$</span>topic<span class="p">,</span> <span class="s">&quot;university&quot;</span><span class="p">),],</span> <span class="m">10</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">       id                        topic
+34     34           adelphi university
+243   243 appalachian state university
+278   278     arizona state university
+348   348            auburn university
+468   468            baylor university
+565   565         bob jones university
+636   636     brigham young university
+732   732  california state university
+786   786   carnegie mellon university
+1558 1558     florida state university
+</code></pre></div>
+<p>And to close it out, how about student ... </p>
+<div class="highlight"><pre><code class="language-r" data-lang="r">tids<span class="p">[</span>str_detect<span class="p">(</span>tids<span class="o">$</span>topic<span class="p">,</span> <span class="s">&quot;student&quot;</span><span class="p">),]</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">       id                         topic
+1591 1591              foreign students
+1746 1746               gifted students
+1780 1780 graduate schools and students
+4249 4249                 student loans
+</code></pre></div>
+<p>This might be a good time to use the similar topic API.  To keep it simple, let&#39;s identify the topics that are related to the topic of <code>Harvard University</code> ...</p>
+<div class="highlight"><pre><code class="language-r" data-lang="r">harvard <span class="o">=</span> tids<span class="p">[</span>str_detect<span class="p">(</span>tids<span class="o">$</span>topic<span class="p">,</span> <span class="s">&quot;harvard uni&quot;</span><span class="p">),]</span><span class="o">$</span>id
+prizSIM<span class="p">(</span>TOKEN<span class="p">,</span> TID <span class="o">=</span> harvard<span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">  topic_id            topic   score
+1     1139 Dallas Mavericks 0.28756
+</code></pre></div>
+<p>Interesting.  How about <code>Amherst College</code>? ...</p>
+<div class="highlight"><pre><code class="language-r" data-lang="r">prizSIM<span class="p">(</span>TOKEN<span class="p">,</span> TID <span class="o">=</span> <span class="m">182</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">  topic_id            topic   score
+1     4866 Williams College 0.32472
+</code></pre></div>
+<p>The API even allows to identify the <strong>current stories</strong> relevant to <code>college admissions</code>?  The top 5 are ...</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">    score                                                                                                url
+1 0.66227          http://now.dartmouth.edu/2015/03/2120-students-offered-acceptance-into-the-class-of-2019/
+2 0.64772          http://college.usatoday.com/2015/03/31/i-didnt-get-into-my-first-choice-college-now-what/
+3 0.62981                                              http://dailyprincetonian.com/news/2015/03/admissions/
+4 0.62837 http://www.nj.com/mercer/index.ssf/2015/03/princeton_university_has_most_selective_admissions.html
+5 0.62516  http://www.nj.com/essex/index.ssf/2015/03/newark_students_get_on-the-spot_college_acceptance.html
+</code></pre></div>
+<p>And for the sake of bots, here is the title of the &quot;hottest&quot; page above ...</p>
+<div class="highlight"><pre><code class="language-r" data-lang="r">x_resp <span class="o">=</span> html<span class="p">(</span>x<span class="o">$</span><span class="kp">url</span><span class="p">[</span><span class="m">1</span><span class="p">])</span>
+html_node<span class="p">(</span>x_resp<span class="p">,</span> <span class="s">&quot;title&quot;</span><span class="p">)</span> <span class="o">%&gt;%</span> html_text<span class="p">()</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] &quot;2,120 Students Offered Acceptance Into the Class of 2019 | Dartmouth Now&quot;
+</code></pre></div>
+<h2>Summary</h2>
+
+<p>Have fun. I make no warantees for the R package, but with a few calls, you can do some really cool things.</p>
+
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'enrollmentnerdery'; // required: replace example with your forum shortname
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+</section>
+
+    </div>
+    <script src="/javascripts/scale.fix.js"></script>
+  </body>
+</html>
