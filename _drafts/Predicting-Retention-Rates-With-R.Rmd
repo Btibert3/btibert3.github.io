@@ -1,0 +1,40 @@
+---
+layout: post
+comments: true
+---
+
+
+```{r setup, echo=FALSE, warning=F, message=FALSE}
+
+## chunk options for this post
+options(width=150)
+knitr::opts_chunk$set(comment = NA) 
+knitr::opts_chunk$set(fig.path='/images/Predicting-Retention-Rates-With-R-')
+
+## load the libraries
+library(pander)
+library(stringr)
+library(dplyr)
+
+
+## basic pander options
+panderOptions("table.split.table", Inf)
+panderOptions("table.style", "rmarkdown")
+
+
+```
+
+
+# Predicting Retention Rates with R
+
+
+## Process
+
+1. Get EF2013D/EF2012D (the enrollment data for Fall 2012 and Fall 2011 cohorts)  
+2. Get Student Charges = IC2013_AY / IC2012_AY / IC2011_AY  
+3. Get Admissions Data = IC2012 / IC2011
+
+## Get the data  
+
+
+
