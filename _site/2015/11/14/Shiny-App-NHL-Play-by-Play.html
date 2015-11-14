@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Brock Tibert - Enrollment Nerdery</title>
+
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/styles.css">
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+  
+<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-TFFDQX"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-TFFDQX');</script>
+<!-- End Google Tag Manager -->
+
+<div class="wrapper">
+  <header>
+    <h1><a href="http://btibert3.github.io"><b>Enrollment Nerdery</b></a></h1>
+    <p>
+    A place to collect my thoughts on data analysis within Enrollment Management. Dare I call it Enrollment Science?
+    </p>
+
+	<img src="/assets/cartoon.png" >
+	<br><br>
+	<p>Where you can find me<br>
+		<a href="https://github.com/btibert3" target="_blank">GitHub</a><br>
+		<a href="https://twitter.com/brocktibert" target="_blank">Twitter</a><br>
+		<a href="https://www.linkedin.com/in/brocktibert" target="_blank">LinkedIn</a><br>
+		<a href="http://btibert3.github.io/resume/build/index.html" target="_blank">Resume</a><br>
+		<a href="mailto:btibert3@gmail.com">Email</a>
+	</p>
+
+  </header>
+
+<section>
+	<h1>NHL Play-by-Play Viewer using R Shiny</h1>
+
+<p><a href="https://github.com/Btibert3/nhl-shiny">This repo</a> contains my first-ever <a href="http://www.rstudio.com/shiny/">R Shiny</a> project.  It&#39;s simple, and represents a minimally viable app. It&#39;s super basic, but the app allows us to query and visualize the NHL&#39;s Play-by-play event logs for a given game.  </p>
+
+<blockquote>
+<p>I updated the app for the <code>2015-16</code> season.  There are a few manual updates to the code that I could refactor and allow the end-user to set, but in the short run, it works.</p>
+</blockquote>
+
+<p>The app also leverages a simple shot probability model that I built. </p>
+
+<p>That repo can <a href="https://github.com/Btibert3/nhl-pbp">be found here</a>.</p>
+
+<h2>Run the app locally</h2>
+
+<ol>
+<li> If you haven&#39;t already, <a href="http://cran.us.r-project.org/">install <code>R</code> here</a>  for your OS.</li>
+<li> Open up a terminal, and type <code>R</code><br></li>
+<li> When <code>R</code> opens, type, <code>install.packages(&#39;shiny&#39;)</code> into the command line<br></li>
+<li> Assuming that runs without error, run my app by typing <code>shiny::runGitHub(&quot;nhl-shiny&quot;, &quot;btibert3&quot;)</code><br></li>
+</ol>
+
+<p>This should fire up your default modern browser.  It will take a few moments to load the data, and will refresh every 20 seconds or so.  When you want to quit the app, go back to the terminal and type <code>CONTROL-C</code> to kill the process.</p>
+
+<h2>A quick screenshot</h2>
+
+<p>Clearly this is very unpolished, but just a quick highlight of the dashboard app.</p>
+
+<p><img src="https://raw.githubusercontent.com/Btibert3/nhl-shiny/master/screenshot.png" alt="dashboard"></p>
+
+<h2>Notes:</h2>
+
+<ul>
+<li> I have noticed that sometimes the app will fail with <code>match</code> errors on the MainPanel of the dashboard.<br>
+--  I am not sure if this is the NHL refusing a <code>GET</code> request to refresh the data or if there is a bug in <code>Shiny</code>.</li>
+</ul>
+
+<h2>About the Shot Prediction Model</h2>
+
+<p>In my previous repo, I highlight a very proof-of-concept model. It&#39;s not elegant, but very effective when estimating a player&#39;s total season goals.  With respect to the point estimates (actual probability of a shot going in), it has some room for improvement; AUC is mid .7&#39;s.</p>
+
+<p>The approach I use is simple: fit a logistic regression to predict a given shot going in goal given:</p>
+
+<ul>
+<li>the distance,<br></li>
+<li>shot angle,<br></li>
+<li>the wing (left/right)<br></li>
+<li>an interaction between distance and angle</li>
+</ul>
+
+<p>When applying the model to every shot from a player (identified by the NHL <code>playerid</code>), and correlating the actual versus predicted goals over the course of a season, the <code>R-squared</code> is a touch under <code>.9</code>. </p>
+
+<h2>TODO:</h2>
+
+<ul>
+<li>[ ] handle invalid gameids gracefully</li>
+<li>[ ] Modify / change the Forecasted Goals stepchart</li>
+<li>[ ] Evaluate if the model should factor in time since last shot (rebounds)</li>
+<li>[ ] Improve the rink plot to be interactive with mouse over detail</li>
+<li>[ ] Better handle games.  Need to change the <code>helpers.R</code> for each season.</li>
+</ul>
+
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'enrollmentnerdery'; // required: replace example with your forum shortname
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+</section>
+
+    </div>
+    <script src="/javascripts/scale.fix.js"></script>
+  </body>
+</html>
