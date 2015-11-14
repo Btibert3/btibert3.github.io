@@ -1,0 +1,171 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Brock Tibert - Enrollment Nerdery</title>
+
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/styles.css">
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+  
+<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-TFFDQX"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-TFFDQX');</script>
+<!-- End Google Tag Manager -->
+
+<div class="wrapper">
+  <header>
+    <h1><a href="http://btibert3.github.io"><b>Enrollment Nerdery</b></a></h1>
+    <p>
+    A place to collect my thoughts on data analysis within Enrollment Management. Dare I call it Enrollment Science?
+    </p>
+
+	<img src="/assets/cartoon.png" >
+	<br><br>
+	<p>Where you can find me<br>
+		<a href="https://github.com/btibert3" target="_blank">GitHub</a><br>
+		<a href="https://twitter.com/brocktibert" target="_blank">Twitter</a><br>
+		<a href="https://www.linkedin.com/in/brocktibert" target="_blank">LinkedIn</a><br>
+		<a href="http://btibert3.github.io/resume/build/index.html" target="_blank">Resume</a><br>
+		<a href="mailto:btibert3@gmail.com">Email</a>
+	</p>
+
+  </header>
+
+<section>
+	<h1>Use R to Model Enrollment Yield</h1>
+
+<p>This repo contains the code to replicate the <a href="http://www.scannellkurz.com/blog/increasing_applicant_pool_monday_musings">Scannel and Kurz Post</a> on 
+why huge swings in app growth might not always be good for Enrollment Managers.</p>
+
+<p>One important note.  I have no affiliation with S&amp;K.  I simply wanted to build upon a common idea and produce code so others can run and build upon this very important concept in Enrollment Management.</p>
+
+<h2>About</h2>
+
+<p>I have been collecting and analyzing data along the lines of the S&amp;K and post for a while now, but they beat me to the punch and did a great job highlighting an important point.</p>
+
+<p>With that said, I figured it would be nice to demonstrate how you could replicate (or modify) this type of analysis yourself,
+for <em>FREE</em> , using <a href="http://cran.r-project.org/">R</a> and <a href="http://nces.ed.gov/ipeds/datacenter/">IPEDS</a>.  </p>
+
+<p>This <a href="https://github.com/Btibert3/sk-delta-apps-yield">repo</a> contains all of my R code that:</p>
+
+<ol>
+<li>Downloads the necessary files from IPEDS</li>
+<li>Clean, merge the files</li>
+<li>Create a master dataset that we use to profile and generate models</li>
+</ol>
+
+<p>Unlike the S&amp;K post, I am going to do two things:</p>
+
+<ol>
+<li>Demostrate documented code</li>
+<li>Build a few models to try to help explain the changes in yield relative to a few factors.</li>
+</ol>
+
+<p>To follow along, run the contents of  <code>college-clean.r</code> to build and save a dataframe (dataset) and then walk through the <code>main-analysis.r</code> file.  I attempted to comment as much as possible in case you are like me and learn by example.</p>
+
+<p>I do not intend for this repo to be viewed as a comprehensive analysis with specific conclusions, but more of a tutorial
+on how analysts in EM might be able to conduct similar studies themselves without requiring expensive software.</p>
+
+<h2>Analysis</h2>
+
+<p>I won&#39;t go too in-depth with re-blogging the concepts that S&amp;K has already done well, but basically this in an important topic that Enrollment Managers need to start thinking about.  Here are my two cents.  Tactics like waiving app fees, Fast Apps, apps that only require a name, etc., will <em>probably</em> have disastrous effects on your yield planning.  In my opinion, stabilzing (and obviously improving yield) is THE main goal year to year; everything else is just noise.  Therefore, if you play games and introduce more variance in yield, your May 1 will become alot more stressful.</p>
+
+<p>Rant aside, lets dive into some output.  There are a few differences that I want to list up front:</p>
+
+<ul>
+<li>Instead of looking at 1 year, I looked at changes in applications and yield from 2007 to 2012</li>
+<li>To be included in the anslysis, a school had to report data in both years.  All other schools were excluded.</li>
+<li>This resulted in 742 Public 4-year  (Sector = 1) and Private 4-year (Sector = 2) schools</li>
+</ul>
+
+<p>First, lets look at the distributions for the values we want to study:</p>
+
+<p><img src="https://raw.github.com/Btibert3/sk-delta-apps-yield/master/figure/distributions.png" alt="Distributions"></p>
+
+<p>By and large, the values are pretty well distributed.  We will be using some techniques that ignore the normality assumption (like we do most times anyway), but it&#39;s always nice to see distributions that are not wildly skewed.</p>
+
+<p>Below is a scattergraph that is similar, but not exactly the same, as the one in the post. Because this looks at a larger timeframe, the variance is much larger than what you see in the original post.</p>
+
+<p><img src="https://raw.github.com/Btibert3/sk-delta-apps-yield/master/figure/scatter.png" alt="Scatter"></p>
+
+<p>The plot is similar in that we see a downward trend; larger app increases over 5 years tended to experience large drops in yield rates.  However, I find it interesting that the quadrant with the largest variance is <code>Apps Up / Yield Down</code>.</p>
+
+<p>I segment the plot by median values.  Here are how the schools are distributed by sector.  The value is a column % within each sector, with 1 = Public 4-year, 2 = Private 4-year.</p>
+
+<p><img src="https://raw.github.com/Btibert3/sk-delta-apps-yield/master/figure/segments-sector-xtab.PNG" alt="Xtab"></p>
+
+<p>From the table above, about 1/3rd of both Public and Private schools saw apps go up, but yield drop.</p>
+
+<h2>Modeling</h2>
+
+<p>Going a step beyond the S&amp;K post, I wanted to try to fit some relatively basic models to the data to see if we could reasonably predict the change in 5-year yield rate.  For this, I chose only a few predictor variables; sector, school region, and 5-year % change in apps. I was more concerned with showing you how easy it is to code up your analytical ideas within R.</p>
+
+<p>The techniques I chose were:
+- OLS Multiple Regression
+- Regression Tree
+- K-Nearest Neighbor (5) 
+- K-Neareet Neightbor (5) but using a school&#39;s Lat/Long data to define neighbors
+- A Network Graph Approach (more on this later)</p>
+
+<p>I am using Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE) to evaluate model performance.  These are two of the commonly used merics listed on <a href="https://www.kaggle.com/wiki/Metrics">Kaggle&#39;s</a> website.</p>
+
+<p>Because the OLS approach performed best overall, I wanted to plot the residuals from models that predict the 5-year app change and 5-year yield rate change.  This plot might be useful if you wanted to look at schools that performed way better or worse than would have been expected in either 1 or both models.</p>
+
+<h3>Network Graph Approach</h3>
+
+<p>At the moment, I am mildly obsessed with looking at problems as a problem that can be solved be leveraging a graph structure.  Common examples are Netflix and Facebook.  In this post, I am showcasing an idea I have had forever now.  I scraped the data for &quot;Similar Colleges&quot; found on various College Search websites.  A connection between two schools is formed when School A lists School B as a &quot;Similar College&quot; on their profile.  My thought is that we can leverage these types of connections to better understand market position, and in turn, yearly changes in our performance metrics.</p>
+
+<p>For this post, I filtered the graph to only include the 742 schools we have been using.  Surprisingly, not all of the schools were in my network dataset, but that is a problem for another day.  Graphs can be visualized using a number of algorithms, but below is a basic picture of how our schools are related.</p>
+
+<p><img src="https://raw.github.com/Btibert3/sk-delta-apps-yield/master/figure/network.png" alt="network"></p>
+
+<p>I know it looks like a big hairball, but I do love how you start to see the &quot;shape&quot; of the comeptetive market as it pertains to student&#39;s researching our schools. </p>
+
+<p>Quick aside, I hypothesize that these clusters of schools represent an institution&#39;s competitive market.  While it could be the case, I believe too often we assume our market is based primarily on geographic market.  I believe studying this network structure will help us find new strategic markets, identify areas of opportunity, etc when recruiting and planning travel.</p>
+
+<p>To predict school X&#39;s 5-year change in yield, I simply average the 5-year change for all institutions that list School X on their profile page.  Using this approach might be extreme overkill, but it helped me think through a number of issues using the <code>igraph</code> package in R.</p>
+
+<h2>Summary</h2>
+
+<p>The image below summarizes the performance for the 5 models.</p>
+
+<p><img src="https://raw.github.com/Btibert3/sk-delta-apps-yield/master/figure/performance.png" alt="outcomes"></p>
+
+<p>Overall, the basic OLS regression the best, but not too far behind was the regression tree and the network-based similar colleges approach.  </p>
+
+<p>The out-of-the-box K Nearest Neighbor performed poorly while the network-based model performed relatively well.  Intuitively this should make some sense, as institutions should be grouped on their percieved peer set, not statistically similarities.  I have to admit, I was surprised that geo-based neighbor approach didn&#39;t do better than it did.</p>
+
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'enrollmentnerdery'; // required: replace example with your forum shortname
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+</section>
+
+    </div>
+    <script src="/javascripts/scale.fix.js"></script>
+  </body>
+</html>
