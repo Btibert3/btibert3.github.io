@@ -1,0 +1,339 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Brock Tibert - Enrollment Nerdery</title>
+
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/styles.css">
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+  
+<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-TFFDQX"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-TFFDQX');</script>
+<!-- End Google Tag Manager -->
+
+<div class="wrapper">
+  <header>
+    <h1><a href="http://btibert3.github.io"><b>Enrollment Nerdery</b></a></h1>
+    <p>
+    A place to collect my thoughts on data analysis within Enrollment Management. Dare I call it Enrollment Science?
+    </p>
+
+	<img src="/assets/cartoon.png" >
+	<br><br>
+	<p>Where you can find me<br>
+		<a href="https://github.com/btibert3" target="_blank">GitHub</a><br>
+		<a href="https://twitter.com/brocktibert" target="_blank">Twitter</a><br>
+		<a href="https://www.linkedin.com/in/brocktibert" target="_blank">LinkedIn</a><br>
+		<a href="http://btibert3.github.io/resume/build/index.html" target="_blank">Resume</a><br>
+		<a href="mailto:btibert3@gmail.com">Email</a>
+	</p>
+
+  </header>
+
+<section>
+	<h1>Use Neo4j to Document Salesforce Requirements</h1>
+
+<p>I have been working on a team that is aiming to implement a Salesforce-based CRM solution for Enrollment Management.  From the beginning, we had an agressive timeline, and the project has taken many twists and turns along the way. While our experience is certainly not unique, and perhaps commonplace, it&#39;s provided us with an opportunity to evaluate some of the fundamental steps that should be set in place prior to continuing down our deployment path considering our go-live date is currently TBD.    </p>
+
+<p>Namely:</p>
+
+<ul>
+<li>Solidifying our data model.  To date, we still don&#39;t have this set, and only focused on &quot;small wins&quot; inside an incomplete data model.</li>
+<li>Doing the due-diligence to identify business processes and implement these via Salesforce functionality like <code>workflow</code>, <code>validation rules</code>, and <code>Process Builder</code>.  Why worry about the electricity in the bathroom if you haven&#39;t poured the concrete for the entire house?  The key thing here is to implement the business process <strong>within</strong> Salesforce, not through data integration procedures.</li>
+<li>Document what is under the hood; simply, the elements that drive our application&#39;s logic.  Documentation always feels like an afterthought, so why not make it a first-class citizen since we are already starting with a clean slate?</li>
+</ul>
+
+<h2>Why do this</h2>
+
+<p>Recently I was working to prototype a business need to read and evaluate applications within Salesforce.  From the beginning, I have always viewed an object&#39;s <code>page layout</code> to be what my team today refers to as our &quot;E-form&quot;, or the screen that we use to read an application online.  </p>
+
+<p>While working through my problem, it occurred to me that having a firm grasp of <strong><em>what depends on what</em></strong> would be crucial to documenting our business, as you are building out the rules that our Admissions folks will be relying on.  </p>
+
+<p>Even though its core function is to serve as a graph database, <a href="http://neo4j.com/">Neo4j</a> and it&#39;s <a href="http://neo4j.com/developer/cypher-query-language/">cypher</a> langugage can act as an excellent tool to solve the documentation problem.  </p>
+
+<p><code>Nodes</code> can be things like:
+- Objects,
+- fields on those objects,
+- properties of those fields, or better yet,
+- processes driven through <code>workflow</code>.  </p>
+
+<p><code>Relationships</code> between <code>Nodes</code> can:<br>
+- Identify what fields are on what object<br>
+- Document how objects are related to each other, and record the type of relationship<br>
+- <code>Picklist</code> values can be mapped<br>
+- In the case of <code>workflow</code> rules, you can document which object the rule is applied to, what fields are being evaluated, and most importantly in the case of a field update, what field the rule updates.  </p>
+
+<h2>The Data Model</h2>
+
+<p>This post will implement a very basic, high-level CRM in Salesforce that consists of just two objects:</p>
+
+<ol>
+<li> The standard object <code>Contact</code><br></li>
+<li> A custom object <code>Application</code></li>
+</ol>
+
+<p>By no means am I rolling out a robust proof-of-concept, but the aim is to highlight how we can leverage <code>Neo4j</code> to visualize what is going on within our Salesforce Org.  With a few simple queries, we can return visizualizations that make it easier to understand what is actually going on under the hood, something that is invaluable when trying to quickly resolve issues.</p>
+
+<p>The <strong>Appendix</strong> at the end of this post includes the code that I used to generate the data model.  Because <code>cypher</code> is really easy to read, developing your model is pretty straightforward.  </p>
+
+<h2>Explore</h2>
+
+<p>Enough with the setup.  Let&#39;s start to take a look at the data model that I have setup for this exercise.  </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">// my data model
+MATCH (a)-[r]-&gt;(b)
+WHERE labels(a) &lt;&gt; [] AND labels(b) &lt;&gt; []
+RETURN DISTINCT head(labels(a)) AS This, type(r) as To, head(labels(b)) AS That
+</code></pre></div>
+<p>returns</p>
+
+<p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-salesforce-documentation/data-model-table.PNG" alt="data-model-table"></p>
+
+<p>We can see what is related to each other, and how. For example, Object&#39;s have fields, but a field can be related to other objects and have a type (i.e. Lookup relationship).</p>
+
+<p>And let&#39;s put a picture to that model.</p>
+
+<p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-salesforce-documentation/data-model-graph.PNG" alt="data-model-graph"></p>
+
+<p>But that is just the foundation.  Let&#39;s start to ask questions of the model to highlight how this can help us in the long run.</p>
+
+<h4>What objects are in our org?</h4>
+<div class="highlight"><pre><code class="language-text" data-lang="text">MATCH (n) RETURN n;
+</code></pre></div>
+<p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-salesforce-documentation/objects.PNG" alt="objectsh"></p>
+
+<h4>Show Everythign related to the Contact Object</h4>
+<div class="highlight"><pre><code class="language-text" data-lang="text">// Everything related to the contact object
+MATCH (app:Object {name:&#39;Contact&#39;})-[*]-&gt;(n) RETURN app, n
+</code></pre></div>
+<p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-salesforce-documentation/contact-object.PNG" alt="objectsh"></p>
+
+<p>From the graph, we can see our Contact object has 4 fields, and while not labeled, Gender is a <code>picklist</code> with two values, Male and Female.</p>
+
+<h4>Show Everything related to the Application Object</h4>
+<div class="highlight"><pre><code class="language-text" data-lang="text">// Everything related to the app object
+MATCH (app:Object {name:&#39;Application&#39;})-[*]-&gt;(n) RETURN app, n
+</code></pre></div>
+<p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-salesforce-documentation/app-object.PNG" alt="app-depends"></p>
+
+<p>This is a little more complicated, and for the purposes of a high-level view, it&#39;s not easy to see everything going on.  We will explore this later, but the key is that we identifed that the Application object is related to the App object via a field on <code>Contact</code> on the application.</p>
+
+<h4>What fields are picklists on the Application</h4>
+<div class="highlight"><pre><code class="language-text" data-lang="text">// what fields does the app object that are picklists
+MATCH (n:Object {name:&#39;Application&#39;})-[:HAS_FIELD]-&gt;(f:Field {type:&#39;Picklist&#39;})
+RETURN n, f
+</code></pre></div>
+<p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-salesforce-documentation/app-picklists.PNG" alt="app-pls"></p>
+
+<p>We will come back to this, but above I have two fields, First and Second Read Decision.  In this example, I am indicating that a particular admissions office might have a business need to read the application twice.  This model is capturing each reader&#39;s thoughts independently.</p>
+
+<h4>How do we represent our admission  Funnel?</h4>
+<div class="highlight"><pre><code class="language-text" data-lang="text">// the values for the Funnel Status
+MATCH (f:Field {name:&#39;Funnel Status&#39;})-[:HAS_VALUE]-&gt;(v)
+RETURN f,v
+</code></pre></div>
+<p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-salesforce-documentation/funnel.PNG" alt="funnel"></p>
+
+<p>This is particuarly important.  We are:</p>
+
+<ol>
+<li> Capturing the various states of the funnel that we commonly refer to.<br></li>
+<li> We are also putting order to each state by using a <code>:NEXT</code> relationship.  The whole point of the funnel is that we can push our suspects or inquiries through the funnel, and eventually there end up in 1 of 3 states; registered, canceled, or denied.</li>
+</ol>
+
+<h4>Let&#39;s show the funnel in action</h4>
+<div class="highlight"><pre><code class="language-text" data-lang="text">// the steps of the funnel status
+MATCH (app:Object {name:&#39;Application&#39;})-[:HAS_FIELD]-&gt;(f:Field {name:&#39;Funnel Status&#39;}),
+      (f)-[:HAS_VALUE]-&gt;(v)
+WITH f,v
+MATCH (v)-[:NEXT]-&gt;(z)
+RETURN v,z
+</code></pre></div>
+<p>By using <code>Neo4j</code> in this way, we are documenting how our business thinks about leads and how they need to progress.</p>
+
+<p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-salesforce-documentation/funnel-flow.PNG" alt="funnel"></p>
+
+<p>By following the paths, it&#39;s pretty easy to visualize how our Enrollment Management shop views the funnel, and how applicants will proceed through the admissions process.</p>
+
+<blockquote>
+<p>We would use these paths to enforce and document the rules within Salesforce to ensure our pool follows this process.</p>
+</blockquote>
+
+<h4>Validation Rule</h4>
+
+<p>Now let&#39;s get to the meat of the idea.  The code below identifies</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">// look at a validation rule by business process ID as graph
+MATCH (v:ValidationRule)-[r]-&gt;(n)
+WHERE v.brID = 2.15
+RETURN v,r,n
+</code></pre></div>
+<p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-salesforce-documentation/validrule.PNG" alt="validrule"></p>
+
+<p>In this post, I only am building out one validation rule, but the aim is to higlighlt how this could be any business logic (or process) that your org needs.</p>
+
+<p>From above, we can easily see that:</p>
+
+<ol>
+<li> The validation rule is applied to the Application Object<br></li>
+<li> Which fields the validation rule is using<br></li>
+<li> Which field I am validating.  In this case, the graph is showing that I am validating that when the checkbox First Read Complete is checked, I ensure that First Read Decision and First Read Comments are proprely filled out.<br></li>
+</ol>
+
+<p>But most importantly, I am querying the validation rule by it&#39;s documented <code>Business Requirement</code> id, or <code>brID=2.15</code>.  Needless to say, when gather requirements, more than likely you are capturing the business needs in a spreadsheet, and giving each an id for quick reference.  In this example, we are storing that id within <code>Neo4j</code> to enable a quick visual reference as to the dependencies of that requirement.</p>
+
+<p>If you wanted to, it&#39;s possible to display this validation rule as a ruleset.  </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">// look at a validation rule by business process ID as ruleset
+MATCH (v:ValidationRule)-[r]-&gt;(n)
+WHERE v.brID = 2.15
+RETURN DISTINCT head(labels(v)) AS This, type(r) as To, n.name AS That
+</code></pre></div>
+<p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-salesforce-documentation/ruleset.PNG" alt="ruleset"></p>
+
+<h2>Summary</h2>
+
+<p>Hopefully this got you thinking about various ways you can leverage other tools to help your business implement a new Salesforce org. In my case, I am a massive fan of <code>Neo4j</code>, and it just feels natural to me leverage it as a documentation tool for Salesforce, given how complex things can get as you translate your business needs and logic from one solution to Salesforce.  In my case, I am coming at it from Enrollment Management within higher ed, but I can&#39;t see why this approach wouldn&#39;t apply to nearly all use-cases.</p>
+
+<p>If you haven&#39;t heard of, or played around with <code>Neo4j</code>, I highly recommend that you check it out.  Beyond being a highly flexible <code>NoSQL</code> solution, the browser - which I used for all of my screenshots - is an incredible tool.</p>
+
+<p>Let me know what you think.  By no means am I a Salesforce expert, but the more I use the platform, the more I am blown away at how easy it is to encapsulate core business needs.</p>
+
+<h2>Appendix</h2>
+
+<p>Below is the cypher that I used to develop the graph for this post.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">//Create the nodes
+// Generated most of this in google sheets
+CREATE (n1: Object {name:&#39;Contact&#39;})
+CREATE (n2: Field {name:&#39;First Name&#39;, type:&#39;Text&#39;})
+CREATE (n3: Field {name:&#39;Last Name&#39;, type:&#39;Text&#39;})
+CREATE (n4: Field {name:&#39;Email&#39;, type:&#39;Email&#39;})
+CREATE (n5: Field {name:&#39;Gender&#39;, type:&#39;Picklist&#39;})
+CREATE (n6: Value {name:&#39;Female&#39;})
+CREATE (n7: Value {name:&#39;Male&#39;})
+CREATE (n8: Object {name:&#39;Application&#39;})
+CREATE (n9: Field {name:&#39;Term&#39;, type:&#39;Picklist&#39;})
+CREATE (n10: Value {name:&#39;Fall 2016&#39;})
+CREATE (n11: Value {name:&#39;Fall 2017&#39;})
+CREATE (n12: Field {name:&#39;Contact&#39;, type:&#39;Lookup&#39;})
+CREATE (n13: Field {name:&#39;Student Type&#39;, type:&#39;Picklist&#39;})
+CREATE (n14: Value {name:&#39;Freshmen&#39;})
+CREATE (n15: Value {name:&#39;Transfer&#39;})
+CREATE (n16: Field {name:&#39;Funnel Status&#39;, type:&#39;Picklist&#39;})
+CREATE (n17: Value {name:&#39;Suspect&#39;})
+CREATE (n18: Value {name:&#39;Inquiry&#39;})
+CREATE (n19: Value {name:&#39;App Started&#39;})
+CREATE (n20: Value {name:&#39;App Submitted&#39;})
+CREATE (n21: Value {name:&#39;App Complete&#39;})
+CREATE (n22: Value {name:&#39;Admitted&#39;})
+CREATE (n23: Value {name:&#39;Denied&#39;})
+CREATE (n24: Value {name:&#39;Waitlisted&#39;})
+CREATE (n25: Value {name:&#39;Deposited&#39;})
+CREATE (n26: Value {name:&#39;Registered&#39;})
+CREATE (n27: Value {name:&#39;Canceled&#39;})
+CREATE (n28: Field {name:&#39;First Read Comments&#39;, type:&#39;Text&#39;})
+CREATE (n29: Field {name:&#39;Second Read Comments&#39;, type:&#39;Text&#39;})
+CREATE (n30: Field {name:&#39;First Read Decision&#39;, type:&#39;Picklist&#39;})
+CREATE (n31: Field {name:&#39;Second Read Decision&#39;, type:&#39;Picklist&#39;})
+CREATE (n32: Value {name:&#39;Accept&#39;})
+CREATE (n33: Value {name:&#39;Deny&#39;})
+CREATE (n34: Value {name:&#39;Defer&#39;})
+CREATE (n35: Value  {name:&#39;Waitlist&#39;})
+CREATE (n36: Field {name:&#39;First Read Complete&#39;, type:&#39;Checkbox&#39;})
+CREATE (n37: Field {name:&#39;Second Read Complete&#39;, type:&#39;Checkbox&#39;})
+CREATE (n38: ValidationRule {name:&#39;First Read Validation&#39;, brID:2.15})
+
+
+// Create the relationships
+CREATE (n1)-[:HAS_FIELD]-&gt;(n2)
+CREATE (n1)-[:HAS_FIELD]-&gt;(n3)
+CREATE (n1)-[:HAS_FIELD]-&gt;(n4)
+CREATE (n1)-[:HAS_FIELD]-&gt;(n5)
+CREATE (n5)-[:HAS_VALUE]-&gt;(n6)
+CREATE (n5)-[:HAS_VALUE]-&gt;(n7)
+CREATE (n8)-[:HAS_FIELD]-&gt;(n9)
+CREATE (n9)-[:HAS_VALUE]-&gt;(n10)
+CREATE (n9)-[:HAS_VALUE]-&gt;(n11)
+CREATE (n8)-[:HAS_FIELD]-&gt;(n12)
+CREATE (n12)-[:RELATED_TO]-&gt;(n1)
+CREATE (n8)-[:HAS_FIELD]-&gt;(n13)
+CREATE (n13)-[:HAS_VALUE]-&gt;(n14)
+CREATE (n13)-[:HAS_VALUE]-&gt;(n15)
+CREATE (n8)-[:HAS_FIELD]-&gt;(n16)
+CREATE (n16)-[:HAS_VALUE]-&gt;(n17)
+CREATE (n16)-[:HAS_VALUE]-&gt;(n18)
+CREATE (n16)-[:HAS_VALUE]-&gt;(n19)
+CREATE (n16)-[:HAS_VALUE]-&gt;(n20)
+CREATE (n16)-[:HAS_VALUE]-&gt;(n21)
+CREATE (n16)-[:HAS_VALUE]-&gt;(n22)
+CREATE (n16)-[:HAS_VALUE]-&gt;(n23)
+CREATE (n16)-[:HAS_VALUE]-&gt;(n24)
+CREATE (n16)-[:HAS_VALUE]-&gt;(n25)
+CREATE (n16)-[:HAS_VALUE]-&gt;(n26)
+CREATE (n16)-[:HAS_VALUE]-&gt;(n27)
+CREATE (n17)-[:NEXT]-&gt;(n18)
+CREATE (n18)-[:NEXT]-&gt;(n19)
+CREATE (n19)-[:NEXT]-&gt;(n20)
+CREATE (n20)-[:NEXT]-&gt;(n21)
+CREATE (n21)-[:NEXT]-&gt;(n22)
+CREATE (n21)-[:NEXT]-&gt;(n23)
+CREATE (n21)-[:NEXT]-&gt;(n24)
+CREATE (n22)-[:NEXT]-&gt;(n25)
+CREATE (n22)-[:NEXT]-&gt;(n27)
+CREATE (n24)-[:NEXT]-&gt;(n22)
+CREATE (n24)-[:NEXT]-&gt;(n23)
+CREATE (n25)-[:NEXT]-&gt;(n26)
+CREATE (n26)-[:NEXT]-&gt;(n27)
+CREATE (n8)-[:HAS_FIELD]-&gt;(n28)
+CREATE (n8)-[:HAS_FIELD]-&gt;(n29)
+CREATE (n8)-[:HAS_FIELD]-&gt;(n30)
+CREATE (n8)-[:HAS_FIELD]-&gt;(n31)
+CREATE (n30)-[:HAS_VALUE]-&gt;(n32)
+CREATE (n30)-[:HAS_VALUE]-&gt;(n33)
+CREATE (n30)-[:HAS_VALUE]-&gt;(n34)
+CREATE (n30)-[:HAS_VALUE]-&gt;(n35)
+CREATE (n31)-[:HAS_VALUE]-&gt;(n32)
+CREATE (n31)-[:HAS_VALUE]-&gt;(n33)
+CREATE (n31)-[:HAS_VALUE]-&gt;(n34)
+CREATE (n31)-[:HAS_VALUE]-&gt;(n35)
+CREATE (n8)-[:HAS_FIELD]-&gt;(n36)
+CREATE (n8)-[:HAS_FIELD]-&gt;(n37)
+
+// Apply the validation rule
+CREATE (n38)-[:APPLIED_TO]-&gt;(n8)
+CREATE (n38)-[:EVALUATES_FIELD]-&gt;(n28)
+CREATE (n38)-[:EVALUATES_FIELD]-&gt;(n30)
+CREATE (n38)-[:VALIDATES]-&gt;(n36);
+</code></pre></div>
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'enrollmentnerdery'; // required: replace example with your forum shortname
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+</section>
+
+    </div>
+    <script src="/javascripts/scale.fix.js"></script>
+  </body>
+</html>
