@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Brock Tibert - Enrollment Nerdery</title>
+
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/styles.css">
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+  
+<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-TFFDQX"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-TFFDQX');</script>
+<!-- End Google Tag Manager -->
+
+<div class="wrapper">
+  <header>
+    <h1><a href="http://btibert3.github.io"><b>Enrollment Nerdery</b></a></h1>
+    <p>
+    A place to collect my thoughts on data analysis within Enrollment Management. Dare I call it Enrollment Science?
+    </p>
+
+	<img src="/assets/cartoon.png" >
+	<br><br>
+	<p>Where you can find me<br>
+		<a href="https://github.com/btibert3" target="_blank">GitHub</a><br>
+		<a href="https://twitter.com/brocktibert" target="_blank">Twitter</a><br>
+		<a href="https://www.linkedin.com/in/brocktibert" target="_blank">LinkedIn</a><br>
+		<a href="http://btibert3.github.io/resume/build/index.html" target="_blank">Resume</a><br>
+		<a href="mailto:btibert3@gmail.com">Email</a>
+	</p>
+
+  </header>
+
+<section>
+	<h1>Using <code>DiagrammeR</code> to help with Data Modeling in Neo4j</h1>
+
+<p>I have been watching the <a href="http://rich-iannone.github.io/DiagrammeR/index.html">DiagrammeR</a> package for a while now, and at this stage, it&#39;s pretty impressive.  I encourage you to take a look at what is possible, but be assured the framework is there to do some really awesome things.</p>
+
+<p>One use-case that applies to me is that of data modeling an app within <a href="http://neo4j.com/">Neo4j</a>.  There are already some tools out there, namely:</p>
+
+<ul>
+<li> <a href="http://www.apcjones.com/arrows/">Arrows</a></li>
+<li> <a href="http://graphgen.graphaware.com/">Graphgen by GraphAware</a></li>
+<li> <a href="https://gist.github.com/nawroth/5880880">And you can always use graphgists</a></li>
+</ul>
+
+<p>The last link above is a sample graph gist that is a decent overview.</p>
+
+<p>In this post, however, I am going to demo the idea that you can use <code>DiagrammeR</code> to assist in the data modeling process.  The benefits, in my opinion, are:</p>
+
+<ul>
+<li><p>Reproducibility.  The arrows tool above is a fantastic in-browser solution, but it lends itself to working on 1 model at a time.  And when you want to restore a previous data model, you have to re-build it again through point-and-click.</p></li>
+<li><p>The syntax is pretty expressive.  The package builds on top of <a href="http://www.graphviz.org/">Graphviz</a>.  Read through the documentation.  The syntax is fairly straight forward, but enables you to do some really powerful diagrams, including ERDs for a relational database.</p></li>
+</ul>
+
+<h2>A Basic Model</h2>
+
+<p>The code and data model below are intended to highlight a simple proof-of-concept about how you might leverage graphViz to make the data-modeling tasks in Neo4j easier.</p>
+<div class="highlight"><pre><code class="language-r" data-lang="r">grViz<span class="p">(</span><span class="s">&quot;</span>
+<span class="s">      digraph neo4j {</span>
+
+<span class="s">      # a &#39;graph&#39; statement</span>
+<span class="s">      graph [overlap = false, fontsize = 10]</span>
+
+<span class="s">      # several &#39;node&#39; statements</span>
+<span class="s">      node [shape = circle, fontname = Helvetica]</span>
+<span class="s">      a [label = &#39;Student&#39;]; </span>
+<span class="s">      b [label = &#39;@@1-1&#39;];</span>
+<span class="s">      c [label = &#39;@@1-2&#39;];</span>
+<span class="s">      d [label = &#39;@@1-3&#39;];</span>
+<span class="s">      e [label = &#39;@@1-4&#39;];</span>
+<span class="s">      f [label = &#39;@@1-5&#39;];</span>
+<span class="s">      g [label = &#39;Marketing Persona&#39;];</span>
+<span class="s">      h [label = &#39;Gender&#39;];</span>
+<span class="s">      i [label = &#39;State&#39;];</span>
+<span class="s">      j [label = &#39;Region&#39;];</span>
+<span class="s">      k [label = &#39;@@2-1&#39;];</span>
+<span class="s">      l [label = &#39;@@2-2&#39;];</span>
+<span class="s">      m [label = &#39;@@2-3&#39;];</span>
+<span class="s">      n [label = &#39;@@2-4&#39;];</span>
+
+<span class="s">      # several &#39;edge&#39; statements</span>
+<span class="s">      a -&gt; b [label = &#39;WAS_SENT&#39; fontsize = 9.5];</span>
+<span class="s">      b -&gt; c [label = &#39;NEXT&#39;];</span>
+<span class="s">      c -&gt; d [label = &#39;NEXT&#39;];</span>
+<span class="s">      d -&gt; e [label = &#39;NEXT&#39;];</span>
+<span class="s">      e -&gt; f [label = &#39;NEXT&#39;];</span>
+<span class="s">      a -&gt; g [label = &#39;FROM_PERSONA&#39;];</span>
+<span class="s">      a -&gt; h [label = &#39;HAS_GENDER&#39;];</span>
+<span class="s">      a -&gt; i [label = &#39;LIVES_IN&#39;];</span>
+<span class="s">      i -&gt; j [label = &#39;IS_IN&#39;];</span>
+<span class="s">      a -&gt; k [label = &#39;HAS_INTERACTION&#39; fontsize = 9.5];</span>
+<span class="s">      k -&gt; l [label = &#39;NEXT&#39;];</span>
+<span class="s">      l -&gt; m [label = &#39;NEXT&#39;];</span>
+<span class="s">      m -&gt; n [label = &#39;NEXT&#39;];</span>
+<span class="s">      }</span>
+
+<span class="s">      [1]: rep(&#39;Email&#39;, 5)</span>
+<span class="s">      [2]: rep(&#39;Interaction&#39;, 4)</span>
+<span class="s">      &quot;</span><span class="p">,</span>
+engine <span class="o">=</span> <span class="s">&quot;circo&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/diagrammer-testing/diagrammer-testing.png" alt="example"></p>
+
+<p>From above, a few things that I wanted to call out:</p>
+
+<ul>
+<li> My example is graph is very specific to Enrollment Management.  In this case, the data are very student-centric, in that a Student is sent marketing emails, has various demographics associated with them, and interacts with you in a variety of ways (i.e. visit campus, request&#39;s information, etc.).  Your domains might yield &quot;prettier&quot; graphs.</li>
+<li> I am leveraging the <code>@@</code> option to dynamically build the labels, which you reference at the end of the script through a footnote.<br></li>
+<li> You can control a large number of elements.  In a couple of cases, I manually specifiy the fontsize for the edge label.</li>
+</ul>
+
+<h2>Summary</h2>
+
+<p>By no means is this a robust demonstration, but simply a quick post to demonstrate an option that you might want to leverage when documenting and building out your database.  As mentioned above, the fact that you can reproduce your graph is why I will probably use <code>DiagrammeR</code> to work through my data modeling tasks.</p>
+
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'enrollmentnerdery'; // required: replace example with your forum shortname
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+</section>
+
+    </div>
+    <script src="/javascripts/scale.fix.js"></script>
+  </body>
+</html>
