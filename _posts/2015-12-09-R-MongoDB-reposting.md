@@ -3,9 +3,10 @@ layout: post
 comments: true   
 ---
 
-# rmongodb Tutorial
+# rmongodb Tutorial  
 
-** This is a reposting from a gist that I wrote back in 12/2013.  It took me a while to find it, so I thought it was necessary to re-post it to my current blog.** 
+
+> This is a reposting from a gist that I wrote back in 12/2013.  It took me a while to find it, so I thought it was necessary to re-post it to my current blog.
 
 
 This is a quick document aimed at highlighting the basics of what you might want to do using `MongoDB` and `R`.  I am coming at this, almost completely, from a `SQL` mindset.
