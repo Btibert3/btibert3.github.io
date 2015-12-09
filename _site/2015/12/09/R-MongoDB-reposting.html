@@ -1,0 +1,316 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Brock Tibert - Enrollment Nerdery</title>
+
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/styles.css">
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+  
+<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-TFFDQX"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-TFFDQX');</script>
+<!-- End Google Tag Manager -->
+
+<div class="wrapper">
+  <header>
+    <h1><a href="http://btibert3.github.io"><b>Enrollment Nerdery</b></a></h1>
+    <p>
+    A place to collect my thoughts on data analysis within Enrollment Management. Dare I call it Enrollment Science?
+    </p>
+
+	<img src="/assets/cartoon.png" >
+	<br><br>
+	<p>Where you can find me<br>
+		<a href="https://github.com/btibert3" target="_blank">GitHub</a><br>
+		<a href="https://twitter.com/brocktibert" target="_blank">Twitter</a><br>
+		<a href="https://www.linkedin.com/in/brocktibert" target="_blank">LinkedIn</a><br>
+		<a href="http://btibert3.github.io/resume/build/index.html" target="_blank">Resume</a><br>
+		<a href="mailto:btibert3@gmail.com">Email</a>
+	</p>
+
+  </header>
+
+<section>
+	<p>** This is a reposting from a gist that I wrote back in 12/2013.  It took me a while to find it, so I thought it was necessary to re-post it to my current blog.** </p>
+
+<h1>rmongodb Tutorial</h1>
+
+<p>This is a quick document aimed at highlighting the basics of what you might want to do using <code>MongoDB</code> and <code>R</code>.  I am coming at this, almost completely, from a <code>SQL</code> mindset.</p>
+
+<h2>Install</h2>
+
+<p>The easiest way to install, I believe, is </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">library(devtools)
+install_github(repo = &quot;mongosoup/rmongodb&quot;)
+</code></pre></div>
+<h2>Connect</h2>
+
+<p>Below we will load the package and connect to Mongo.  The console will print <code>TRUE</code> if we are good to go.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">library(rmongodb)
+# connect to MongoDB
+mongo = mongo.create(host = &quot;localhost&quot;)
+mongo.is.connected(mongo)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] TRUE
+</code></pre></div>
+<h2>What&#39;s in MongoDB</h2>
+
+<p>Take a look at what you have.  This will show the <code>databases</code> in my local instace of <code>MongoDB</code>.  </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">mongo.get.databases(mongo)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] &quot;bbdi&quot;            &quot;nhlpbp&quot;          &quot;he_search_graph&quot; &quot;emchat&quot;         
+[5] &quot;twitter&quot;        
+</code></pre></div>
+<p>Let&#39;s look at all of the collections (tables) in one of the db&#39;s.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">mongo.get.database.collections(mongo, db = &quot;nhlpbp&quot;)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] &quot;nhlpbp.gameids&quot; &quot;nhlpbp.rawpbp&quot; 
+</code></pre></div>
+<h2>Some Helper Functions</h2>
+
+<p>There are some basic commands that you will help you manage your database.   For instance, count how many documents (rows) we have in a collection.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">DBNS = &quot;nhlpbp.gameids&quot;
+mongo.count(mongo, ns = DBNS)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] 4761
+</code></pre></div>
+<p>Note the use of the <code>DBNS</code> object.  If you end up looking around Mongo&#39;s documentaiton, you will notice that the syntax is usually <code>db.collection.method</code>.  In R, the method portion is typically handled for us.  Above, we are performing the method <code>count</code> on the <code>gameids</code> collection from the database <code>nhlpbp</code>.</p>
+
+<p>During development, it might be helpful to start fresh with a new collection.  If you want to delete, or drop, the collection, just use the syntax below.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">mongo.count(mongo, ns = DBNS)
+</code></pre></div>
+<p><strong>CAVEAT:</strong>  Make sure you comment out this line if you start to test your code.  </p>
+
+<h2>Query the data</h2>
+
+<p>When exploring what you have for data, it&#39;s really helpful to use the <code>find.one</code> concept.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">tmp = mongo.find.one(mongo, ns = &quot;nhlpbp.gameids&quot;)
+tmp
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">    _id : 7      5233cec65b5e625ad4e6e67b
+    seasonID : 2     20082009
+    gameID : 2   2008030417
+    homeTeam : 2     Detroit Red Wings
+    gameType : 2     Playoffs
+    awayTeam : 2     Pittsburgh Penguins
+    date : 2     Fri Jun 12, 2009
+</code></pre></div>
+<p>If <code>tmp</code> prints out some data, our query was successful.  Check out the help for <code>find.one</code> if you want more info.</p>
+
+<p><strong>PROTIP:</strong> When you print a document, you will see the field: a mongo value type and the value.  The mongo value type will be passed as a numeric value.  To understand how Mongo stores the data, <a href="http://docs.mongodb.org/manual/reference/bson-types/">refer to the documentation</a>.  This wil be a huge help when you have to build queries using the BSON buffer.</p>
+
+<p>In <code>SQL</code> terms, its worth nothing that above we basically performed a <code>SELECT *</code> on collection (table). </p>
+
+<p>Notice that <code>tmp</code> is not a <em>normal</em> <code>R</code> object.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">class(tmp)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] &quot;mongo.bson&quot;
+</code></pre></div>
+<p>Luckily, the package has a nice feature to convert Mongo&#39;s <code>BSON</code> objects to a list.  Below I will edit <code>tmp</code> in-place, show that it&#39;s a list, print the names of the list, and show you the data.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">tmp = mongo.bson.to.list(tmp)
+class(tmp)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] &quot;list&quot;
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">names(tmp)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] &quot;_id&quot;      &quot;seasonID&quot; &quot;gameID&quot;   &quot;homeTeam&quot; &quot;gameType&quot; &quot;awayTeam&quot;
+[7] &quot;date&quot;    
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">tmp
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">$`_id`
+{ $oid : &quot;5233cec65b5e625ad4e6e67b&quot; }
+
+$seasonID
+[1] &quot;20082009&quot;
+
+$gameID
+[1] &quot;2008030417&quot;
+
+$homeTeam
+[1] &quot;Detroit Red Wings&quot;
+
+$gameType
+[1] &quot;Playoffs&quot;
+
+$awayTeam
+[1] &quot;Pittsburgh Penguins&quot;
+
+$date
+[1] &quot;Fri Jun 12, 2009&quot;
+</code></pre></div>
+<p>Obviously at some point we will need to bring in a query that has multiple rows.  </p>
+
+<p>Luckily, there is a handy <code>find.all</code> function that brings all records from a collection that match our query into an <code>dataframe</code>.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">find_all = mongo.find.all(mongo, ns = DBNS)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">Warning: This fails for most NoSQL data structures. I am working on a new
+solution
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">nrow(find_all)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] 4761
+</code></pre></div>
+<p>As noted in the warning (and the documentation, <code>?mongo.find.all</code>) the <code>find.all</code> function will most likely fail.  I highly suspect that this is because of the concept that data can be nested, one of primary reasons that NoSQL is great for a number of problems.  </p>
+
+<p>If you are coming to this tutorial after only using Excel, SPSS, etc., this might seem like gibberish because we think of data as matrix-like (rows and columns).  Take a peak at the &quot;data structure&quot; of a raw tweet.  <a href="https://dev.twitter.com/docs/api/1.1/get/search/tweets">This might help you think this through</a>.  </p>
+
+<h2>Build a Dataset</h2>
+
+<p>In most cases, you will most likely need to iterate over a recordset.  While you might want a nicely formed dataset to be returned, you will quickly start to appreciate the notion of manually performing operations record-wise.  If you want to transform and add a row to dataframe, great, but you can do much more!  </p>
+
+<p>For example, say you had a predictive model.  You could take each document returned from Mongo, apply the model in R, and then do something with the results.  Of course, this is just one of the many things you can do when you evaluate the results record by record.</p>
+
+<p>Below, we will create the cursor that represents a pointer to the results of our query, and iterate over the cursor record by record.  Below, the data is a flat structure that naturally lends itself to a dataframe.  Once the data is in an R list, though, you can do whatever you like.  </p>
+
+<p>NOTE:  This requires the <code>plyr</code> package.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">library(plyr)
+## create the empty data frame
+gameids = data.frame(stringsAsFactors = FALSE)
+
+## create the namespace
+DBNS = &quot;nhlpbp.gameids&quot;
+
+## create the cursor we will iterate over, basically a select * in SQL
+cursor = mongo.find(mongo, DBNS)
+
+## create the counter
+i = 1
+
+## iterate over the cursor
+while (mongo.cursor.next(cursor)) {
+    # iterate and grab the next record
+    tmp = mongo.bson.to.list(mongo.cursor.value(cursor))
+    # make it a dataframe
+    tmp.df = as.data.frame(t(unlist(tmp)), stringsAsFactors = F)
+    # bind to the master dataframe
+    gameids = rbind.fill(gameids, tmp.df)
+    # to print a message, uncomment the next 2 lines cat(&#39;finished game &#39;, i,
+    # &#39;\n&#39;) i = i +1
+}
+</code></pre></div>
+<p>And to prove what we have ...</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">dim(gameids)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] 4761    7
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">str(gameids)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">&#39;data.frame&#39;:   4761 obs. of  7 variables:
+ $ _id     : chr  &quot;0&quot; &quot;26599512&quot; &quot;0&quot; &quot;1&quot; ...
+ $ seasonID: chr  &quot;20082009&quot; &quot;20082009&quot; &quot;20082009&quot; &quot;20082009&quot; ...
+ $ gameID  : chr  &quot;2008030417&quot; &quot;2008030416&quot; &quot;2008030415&quot; &quot;2008030414&quot; ...
+ $ homeTeam: chr  &quot;Detroit Red Wings&quot; &quot;Pittsburgh Penguins&quot; &quot;Detroit Red Wings&quot; &quot;Pittsburgh Penguins&quot; ...
+ $ gameType: chr  &quot;Playoffs&quot; &quot;Playoffs&quot; &quot;Playoffs&quot; &quot;Playoffs&quot; ...
+ $ awayTeam: chr  &quot;Pittsburgh Penguins&quot; &quot;Detroit Red Wings&quot; &quot;Pittsburgh Penguins&quot; &quot;Detroit Red Wings&quot; ...
+ $ date    : chr  &quot;Fri Jun 12, 2009&quot; &quot;Tue Jun 9, 2009&quot; &quot;Sat Jun 6, 2009&quot; &quot;Thu Jun 4, 2009&quot; ...
+</code></pre></div>
+<h2>A More Complex Query</h2>
+
+<p>Per the examples shown in the documention for the <code>mongo.find</code> function (<code>?mongo.find</code>), you will note that we can do much more than basic <code>SELECT *</code> commands.  While it&#39;s not pratical, it highlights we filter rows based on certain criteria (<code>query</code> argument), sort the results (<code>sort</code> argument), bring back only certain fields (<code>field</code> argument) and in the case of large datasets, limit (<code>limit</code> argument) the number of documents returned.  </p>
+
+<p>While each argument <em>could</em> pass data as a list, I am going to highlight the usage of <code>bson.buffer.append</code>.  We can build the elements we want to pass to each argument rather painlessly.  When we are all set, we just convert the buffer to a BSON document.</p>
+
+<p>NOTE:  We are simply passing a <code>1</code> flag as the value to indicate that we want to turn on this field.  If you want to exclude the <code>_id</code> variable, pass this field and use a value of <code>0L</code> to turn it off.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text"># define our database.collection
+DBNS = &quot;nhlpbp.gameids&quot;
+
+# define the query
+query = mongo.bson.buffer.create()
+mongo.bson.buffer.append(query, &quot;seasonID&quot;, &quot;20122013&quot;)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] TRUE
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text"># when complete, make object from buffer
+query = mongo.bson.from.buffer(query)
+
+# define the fields
+fields = mongo.bson.buffer.create()
+mongo.bson.buffer.append(fields, &quot;gameID&quot;, 1L)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] TRUE
+</code></pre></div><div class="highlight"><pre><code class="language-r" data-lang="r">mongo.bson.buffer.append<span class="p">(</span>fields<span class="p">,</span> <span class="s">&quot;_id&quot;</span><span class="p">,</span> <span class="m">0L</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] TRUE
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text"># when complete, make object from buffer
+fields = mongo.bson.from.buffer(fields)
+
+# create the cursor
+cursor = mongo.find(mongo, ns = DBNS, query = query, fields = fields, limit = 100L)
+
+## iterate over the cursor
+gids = data.frame(stringsAsFactors = FALSE)
+while (mongo.cursor.next(cursor)) {
+    # iterate and grab the next record
+    tmp = mongo.bson.to.list(mongo.cursor.value(cursor))
+    # make it a dataframe
+    tmp.df = as.data.frame(t(unlist(tmp)), stringsAsFactors = F)
+    # bind to the master dataframe
+    gids = rbind.fill(gids, tmp.df)
+}
+</code></pre></div>
+<p>Let&#39;s look at the data.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">class(gids)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] &quot;data.frame&quot;
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">dim(gids)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] 100   1
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">head(gids)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">      gameID
+1 2012030416
+2 2012030415
+3 2012030414
+4 2012030413
+5 2012030412
+6 2012030411
+</code></pre></div>
+<h2>Write Data</h2>
+
+<p>Lastly, it would be helpful to write data to Mongo. At the end of the day, <code>BSON</code> objects are basically <code>lists</code> in terms of R.  This is an over-simplification, but its not far off.</p>
+
+<p>When we want to send a document (record) to Mongo, we simply need to put our data into list-form, make it a BSON object, and then insert the data.  When putting data back to Mongo, think in the terms of lists, or <code>key/value</code> pairs.</p>
+
+<p>Just to emphasize this example, I will request a page from twitter in the form of JSON.  Because of the new authentication standards (a good thing, btw), we will get an error, but this shows us how to work with various data formats in a pipeline.</p>
+
+<p>This code will require that you have the packages <code>RCurl</code> and <code>rjson</code> installed.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">library(RCurl)
+library(rjson)
+URL = &quot;https://search.twitter.com/search.json&quot;
+tmp = getURL(URL)
+
+# what is tmp?
+class(tmp)
+
+[1] &quot;character&quot;
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text"># now what do we have?
+j = fromJSON(tmp)
+class(j)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] &quot;list&quot;
+</code></pre></div>
+<p>In the end, all we did was <code>JSON -&gt; list -&gt; BSON</code>.  From here, we just convert our list back into BSON format.  </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">b = mongo.bson.from.list(j)
+class(b)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] &quot;mongo.bson&quot;
+</code></pre></div>
+<p>Lastly, just insert <code>b</code> as a new document into the tweets collection and create it if it doesn&#39;t already exist.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">mongo.insert(mongo, &quot;twitter.exampletweets&quot;, b)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] TRUE
+</code></pre></div>
+<p>And confirm that we have data ...</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">mongo.count(mongo, &quot;twitter.exampletweets&quot;)
+</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">[1] 3
+</code></pre></div>
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'enrollmentnerdery'; // required: replace example with your forum shortname
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+</section>
+
+    </div>
+    <script src="/javascripts/scale.fix.js"></script>
+  </body>
+</html>

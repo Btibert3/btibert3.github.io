@@ -3,6 +3,8 @@ layout: post
 comments: true   
 ---
 
+___This is a resposting of a gist from 12/3/2013 that I searched high and low for recently.  Why not re-post?___
+
 # Environment Variables in Rstudio on Mac
 
 I recently asked a question on [Stack Overflow](http://stackoverflow.com/questions/34160664/environment-variables-in-rstudio-on-mac) on the best way to set environment variables on a Mac for use within an RStudio session.  
