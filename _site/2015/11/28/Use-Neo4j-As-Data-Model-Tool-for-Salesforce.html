@@ -93,7 +93,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <h2>Explore</h2>
 
 <p>Enough with the setup.  Let&#39;s start to take a look at the data model that I have setup for this exercise.  </p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">// my data model
+<div class="highlight"><pre><code class="language-" data-lang="">// my data model
 MATCH (a)-[r]-&gt;(b)
 WHERE labels(a) &lt;&gt; [] AND labels(b) &lt;&gt; []
 RETURN DISTINCT head(labels(a)) AS This, type(r) as To, head(labels(b)) AS That
@@ -111,29 +111,29 @@ RETURN DISTINCT head(labels(a)) AS This, type(r) as To, head(labels(b)) AS That
 <p>But that is just the foundation.  Let&#39;s start to ask questions of the model to highlight how this can help us in the long run.</p>
 
 <h4>What objects are in our org?</h4>
-<div class="highlight"><pre><code class="language-text" data-lang="text">MATCH (n) RETURN n;
+<div class="highlight"><pre><code class="language-" data-lang="">MATCH (n) RETURN n;
 </code></pre></div>
 <p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-salesforce-documentation/objects.PNG" alt="objectsh"></p>
 
 <h4>Show Everythign related to the Contact Object</h4>
-<div class="highlight"><pre><code class="language-text" data-lang="text">// Everything related to the contact object
-MATCH (app:Object {name:&#39;Contact&#39;})-[*]-&gt;(n) RETURN app, n
+<div class="highlight"><pre><code class="language-" data-lang="">// Everything related to the contact object
+MATCH (app:Object {name:'Contact'})-[*]-&gt;(n) RETURN app, n
 </code></pre></div>
 <p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-salesforce-documentation/contact-object.PNG" alt="objectsh"></p>
 
 <p>From the graph, we can see our Contact object has 4 fields, and while not labeled, Gender is a <code>picklist</code> with two values, Male and Female.</p>
 
 <h4>Show Everything related to the Application Object</h4>
-<div class="highlight"><pre><code class="language-text" data-lang="text">// Everything related to the app object
-MATCH (app:Object {name:&#39;Application&#39;})-[*]-&gt;(n) RETURN app, n
+<div class="highlight"><pre><code class="language-" data-lang="">// Everything related to the app object
+MATCH (app:Object {name:'Application'})-[*]-&gt;(n) RETURN app, n
 </code></pre></div>
 <p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-salesforce-documentation/app-object.PNG" alt="app-depends"></p>
 
 <p>This is a little more complicated, and for the purposes of a high-level view, it&#39;s not easy to see everything going on.  We will explore this later, but the key is that we identifed that the Application object is related to the App object via a field on <code>Contact</code> on the application.</p>
 
 <h4>What fields are picklists on the Application</h4>
-<div class="highlight"><pre><code class="language-text" data-lang="text">// what fields does the app object that are picklists
-MATCH (n:Object {name:&#39;Application&#39;})-[:HAS_FIELD]-&gt;(f:Field {type:&#39;Picklist&#39;})
+<div class="highlight"><pre><code class="language-" data-lang="">// what fields does the app object that are picklists
+MATCH (n:Object {name:'Application'})-[:HAS_FIELD]-&gt;(f:Field {type:'Picklist'})
 RETURN n, f
 </code></pre></div>
 <p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-salesforce-documentation/app-picklists.PNG" alt="app-pls"></p>
@@ -141,8 +141,8 @@ RETURN n, f
 <p>We will come back to this, but above I have two fields, First and Second Read Decision.  In this example, I am indicating that a particular admissions office might have a business need to read the application twice.  This model is capturing each reader&#39;s thoughts independently.</p>
 
 <h4>How do we represent our admission  Funnel?</h4>
-<div class="highlight"><pre><code class="language-text" data-lang="text">// the values for the Funnel Status
-MATCH (f:Field {name:&#39;Funnel Status&#39;})-[:HAS_VALUE]-&gt;(v)
+<div class="highlight"><pre><code class="language-" data-lang="">// the values for the Funnel Status
+MATCH (f:Field {name:'Funnel Status'})-[:HAS_VALUE]-&gt;(v)
 RETURN f,v
 </code></pre></div>
 <p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-salesforce-documentation/funnel.PNG" alt="funnel"></p>
@@ -155,8 +155,8 @@ RETURN f,v
 </ol>
 
 <h4>Let&#39;s show the funnel in action</h4>
-<div class="highlight"><pre><code class="language-text" data-lang="text">// the steps of the funnel status
-MATCH (app:Object {name:&#39;Application&#39;})-[:HAS_FIELD]-&gt;(f:Field {name:&#39;Funnel Status&#39;}),
+<div class="highlight"><pre><code class="language-" data-lang="">// the steps of the funnel status
+MATCH (app:Object {name:'Application'})-[:HAS_FIELD]-&gt;(f:Field {name:'Funnel Status'}),
       (f)-[:HAS_VALUE]-&gt;(v)
 WITH f,v
 MATCH (v)-[:NEXT]-&gt;(z)
@@ -175,7 +175,7 @@ RETURN v,z
 <h4>Validation Rule</h4>
 
 <p>Now let&#39;s get to the meat of the idea.  The code below identifies</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">// look at a validation rule by business process ID as graph
+<div class="highlight"><pre><code class="language-" data-lang="">// look at a validation rule by business process ID as graph
 MATCH (v:ValidationRule)-[r]-&gt;(n)
 WHERE v.brID = 2.15
 RETURN v,r,n
@@ -195,7 +195,7 @@ RETURN v,r,n
 <p>But most importantly, I am querying the validation rule by it&#39;s documented <code>Business Requirement</code> id, or <code>brID=2.15</code>.  Needless to say, when gather requirements, more than likely you are capturing the business needs in a spreadsheet, and giving each an id for quick reference.  In this example, we are storing that id within <code>Neo4j</code> to enable a quick visual reference as to the dependencies of that requirement.</p>
 
 <p>If you wanted to, it&#39;s possible to display this validation rule as a ruleset.  </p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">// look at a validation rule by business process ID as ruleset
+<div class="highlight"><pre><code class="language-" data-lang="">// look at a validation rule by business process ID as ruleset
 MATCH (v:ValidationRule)-[r]-&gt;(n)
 WHERE v.brID = 2.15
 RETURN DISTINCT head(labels(v)) AS This, type(r) as To, n.name AS That
@@ -213,46 +213,46 @@ RETURN DISTINCT head(labels(v)) AS This, type(r) as To, n.name AS That
 <h2>Appendix</h2>
 
 <p>Below is the cypher that I used to develop the graph for this post.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">//Create the nodes
+<div class="highlight"><pre><code class="language-" data-lang="">//Create the nodes
 // Generated most of this in google sheets
-CREATE (n1: Object {name:&#39;Contact&#39;})
-CREATE (n2: Field {name:&#39;First Name&#39;, type:&#39;Text&#39;})
-CREATE (n3: Field {name:&#39;Last Name&#39;, type:&#39;Text&#39;})
-CREATE (n4: Field {name:&#39;Email&#39;, type:&#39;Email&#39;})
-CREATE (n5: Field {name:&#39;Gender&#39;, type:&#39;Picklist&#39;})
-CREATE (n6: Value {name:&#39;Female&#39;})
-CREATE (n7: Value {name:&#39;Male&#39;})
-CREATE (n8: Object {name:&#39;Application&#39;})
-CREATE (n9: Field {name:&#39;Term&#39;, type:&#39;Picklist&#39;})
-CREATE (n10: Value {name:&#39;Fall 2016&#39;})
-CREATE (n11: Value {name:&#39;Fall 2017&#39;})
-CREATE (n12: Field {name:&#39;Contact&#39;, type:&#39;Lookup&#39;})
-CREATE (n13: Field {name:&#39;Student Type&#39;, type:&#39;Picklist&#39;})
-CREATE (n14: Value {name:&#39;Freshmen&#39;})
-CREATE (n15: Value {name:&#39;Transfer&#39;})
-CREATE (n16: Field {name:&#39;Funnel Status&#39;, type:&#39;Picklist&#39;})
-CREATE (n17: Value {name:&#39;Suspect&#39;})
-CREATE (n18: Value {name:&#39;Inquiry&#39;})
-CREATE (n19: Value {name:&#39;App Started&#39;})
-CREATE (n20: Value {name:&#39;App Submitted&#39;})
-CREATE (n21: Value {name:&#39;App Complete&#39;})
-CREATE (n22: Value {name:&#39;Admitted&#39;})
-CREATE (n23: Value {name:&#39;Denied&#39;})
-CREATE (n24: Value {name:&#39;Waitlisted&#39;})
-CREATE (n25: Value {name:&#39;Deposited&#39;})
-CREATE (n26: Value {name:&#39;Registered&#39;})
-CREATE (n27: Value {name:&#39;Canceled&#39;})
-CREATE (n28: Field {name:&#39;First Read Comments&#39;, type:&#39;Text&#39;})
-CREATE (n29: Field {name:&#39;Second Read Comments&#39;, type:&#39;Text&#39;})
-CREATE (n30: Field {name:&#39;First Read Decision&#39;, type:&#39;Picklist&#39;})
-CREATE (n31: Field {name:&#39;Second Read Decision&#39;, type:&#39;Picklist&#39;})
-CREATE (n32: Value {name:&#39;Accept&#39;})
-CREATE (n33: Value {name:&#39;Deny&#39;})
-CREATE (n34: Value {name:&#39;Defer&#39;})
-CREATE (n35: Value  {name:&#39;Waitlist&#39;})
-CREATE (n36: Field {name:&#39;First Read Complete&#39;, type:&#39;Checkbox&#39;})
-CREATE (n37: Field {name:&#39;Second Read Complete&#39;, type:&#39;Checkbox&#39;})
-CREATE (n38: ValidationRule {name:&#39;First Read Validation&#39;, brID:2.15})
+CREATE (n1: Object {name:'Contact'})
+CREATE (n2: Field {name:'First Name', type:'Text'})
+CREATE (n3: Field {name:'Last Name', type:'Text'})
+CREATE (n4: Field {name:'Email', type:'Email'})
+CREATE (n5: Field {name:'Gender', type:'Picklist'})
+CREATE (n6: Value {name:'Female'})
+CREATE (n7: Value {name:'Male'})
+CREATE (n8: Object {name:'Application'})
+CREATE (n9: Field {name:'Term', type:'Picklist'})
+CREATE (n10: Value {name:'Fall 2016'})
+CREATE (n11: Value {name:'Fall 2017'})
+CREATE (n12: Field {name:'Contact', type:'Lookup'})
+CREATE (n13: Field {name:'Student Type', type:'Picklist'})
+CREATE (n14: Value {name:'Freshmen'})
+CREATE (n15: Value {name:'Transfer'})
+CREATE (n16: Field {name:'Funnel Status', type:'Picklist'})
+CREATE (n17: Value {name:'Suspect'})
+CREATE (n18: Value {name:'Inquiry'})
+CREATE (n19: Value {name:'App Started'})
+CREATE (n20: Value {name:'App Submitted'})
+CREATE (n21: Value {name:'App Complete'})
+CREATE (n22: Value {name:'Admitted'})
+CREATE (n23: Value {name:'Denied'})
+CREATE (n24: Value {name:'Waitlisted'})
+CREATE (n25: Value {name:'Deposited'})
+CREATE (n26: Value {name:'Registered'})
+CREATE (n27: Value {name:'Canceled'})
+CREATE (n28: Field {name:'First Read Comments', type:'Text'})
+CREATE (n29: Field {name:'Second Read Comments', type:'Text'})
+CREATE (n30: Field {name:'First Read Decision', type:'Picklist'})
+CREATE (n31: Field {name:'Second Read Decision', type:'Picklist'})
+CREATE (n32: Value {name:'Accept'})
+CREATE (n33: Value {name:'Deny'})
+CREATE (n34: Value {name:'Defer'})
+CREATE (n35: Value  {name:'Waitlist'})
+CREATE (n36: Field {name:'First Read Complete', type:'Checkbox'})
+CREATE (n37: Field {name:'Second Read Complete', type:'Checkbox'})
+CREATE (n38: ValidationRule {name:'First Read Validation', brID:2.15})
 
 
 // Create the relationships
@@ -315,6 +315,7 @@ CREATE (n38)-[:APPLIED_TO]-&gt;(n8)
 CREATE (n38)-[:EVALUATES_FIELD]-&gt;(n28)
 CREATE (n38)-[:EVALUATES_FIELD]-&gt;(n30)
 CREATE (n38)-[:VALIDATES]-&gt;(n36);
+
 </code></pre></div>
 	<div id="disqus_thread"></div>
 <script type="text/javascript">

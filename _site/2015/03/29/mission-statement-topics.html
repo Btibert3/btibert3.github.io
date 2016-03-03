@@ -117,30 +117,30 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <p>Here are some quick cypher queries to explore the data we have loaded into the database.</p>
 
 <h5>Summary of the graph</h5>
-<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="kp">summary</span><span class="p">(</span>graph<span class="p">)</span>
-</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">    This         To   That
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="n">summary</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-" data-lang="">    This         To   That
 1 School  HAS_TOPIC  Topic
 2 School SIMILAR_TO School
 </code></pre></div>
 <h6>How many nodes are in the database</h6>
-<div class="highlight"><pre><code class="language-r" data-lang="r">cypher<span class="p">(</span>graph<span class="p">,</span> <span class="s">&quot;MATCH (n) RETURN COUNT(n)&quot;</span><span class="p">)</span>
-</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">  COUNT(n)
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="n">cypher</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="s2">"MATCH (n) RETURN COUNT(n)"</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-" data-lang="">  COUNT(n)
 1      803
 </code></pre></div>
 <h6>Count of distinct node types</h6>
-<div class="highlight"><pre><code class="language-r" data-lang="r">query <span class="o">=</span> <span class="s">&quot;</span>
-<span class="s">// counts by distinct node type</span>
-<span class="s">MATCH n </span>
-<span class="s">RETURN DISTINCT LABELS(n), COUNT(n)</span>
-<span class="s">&quot;</span>
-cypher<span class="p">(</span>graph<span class="p">,</span> query<span class="p">)</span>
-</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">  LABELS(n) COUNT(n)
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="n">query</span> <span class="o">=</span> <span class="s2">"
+// counts by distinct node type
+MATCH n 
+RETURN DISTINCT LABELS(n), COUNT(n)
+"</span>
+<span class="n">cypher</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-" data-lang="">  LABELS(n) COUNT(n)
 1     Topic      319
 2    School      484
 </code></pre></div>
 <h6>Count of relationship types</h6>
-<div class="highlight"><pre><code class="language-r" data-lang="r">cypher<span class="p">(</span>graph<span class="p">,</span> <span class="s">&quot;MATCH ()-[r]-&gt;() RETURN type(r), count(*)&quot;</span><span class="p">)</span>
-</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">     type(r) count(*)
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="n">cypher</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="s2">"MATCH ()-[r]-&gt;() RETURN type(r), count(*)"</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-" data-lang="">     type(r) count(*)
 1  HAS_TOPIC     2701
 2 SIMILAR_TO     5468
 </code></pre></div>
@@ -505,34 +505,34 @@ cypher<span class="p">(</span>graph<span class="p">,</span> query<span class="p"
 <li> Colleges and Universities, or</li>
 <li> Higher Education</li>
 </ol>
-<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## the query</span>
-query <span class="o">=</span> <span class="s">&quot;</span>
-<span class="s">MATCH (s1:School) -[r1:HAS_TOPIC]-&gt; (t1:Topic)</span>
-<span class="s">WHERE EXISTS((s1)-[:HAS_TOPIC]-&gt;(:Topic {topic:&#39;Colleges and Universities&#39;})) OR </span>
-<span class="s">      EXISTS((s1)-[:HAS_TOPIC]-&gt;(:Topic {topic:&#39;Higher Education&#39;}))</span>
-<span class="s">RETURN &#39;has topic&#39; as topic,</span>
-<span class="s">       avg(s1.ape) as ape, </span>
-<span class="s">       avg(s1.sat75) as sat75,</span>
-<span class="s">       avg(s1.iqr) as iqr,</span>
-<span class="s">       avg(s1.applcn) as apps,</span>
-<span class="s">       avg(s1.enrlft) as enrollment,</span>
-<span class="s">       count(DISTINCT s1) as total_rels</span>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## the query
+</span><span class="n">query</span> <span class="o">=</span> <span class="s2">"
+MATCH (s1:School) -[r1:HAS_TOPIC]-&gt; (t1:Topic)
+WHERE EXISTS((s1)-[:HAS_TOPIC]-&gt;(:Topic {topic:'Colleges and Universities'})) OR 
+      EXISTS((s1)-[:HAS_TOPIC]-&gt;(:Topic {topic:'Higher Education'}))
+RETURN 'has topic' as topic,
+       avg(s1.ape) as ape, 
+       avg(s1.sat75) as sat75,
+       avg(s1.iqr) as iqr,
+       avg(s1.applcn) as apps,
+       avg(s1.enrlft) as enrollment,
+       count(DISTINCT s1) as total_rels
 
-<span class="s">UNION</span>
+UNION
 
-<span class="s">MATCH (s2:School) -[r2:HAS_TOPIC]-&gt; (t2:Topic)</span>
-<span class="s">WHERE NOT(EXISTS((s2)-[:HAS_TOPIC]-&gt;(:Topic {topic:&#39;Colleges and Universities&#39;})) OR </span>
-<span class="s">      EXISTS((s2)-[:HAS_TOPIC]-&gt;(:Topic {topic:&#39;Higher Education&#39;})))</span>
-<span class="s">RETURN &#39;no topic&#39; as topic,</span>
-<span class="s">       avg(s2.ape) as ape, </span>
-<span class="s">       avg(s2.sat75) as sat75,</span>
-<span class="s">       avg(s2.iqr) as iqr,</span>
-<span class="s">       avg(s2.applcn) as apps,</span>
-<span class="s">       avg(s2.enrlft) as enrollment,</span>
-<span class="s">       count(DISTINCT s2) as total_rels</span>
-<span class="s">&quot;</span>
-dat <span class="o">=</span> cypher<span class="p">(</span>graph<span class="p">,</span> query<span class="p">)</span>
-pander<span class="p">(</span>dat<span class="p">)</span>
+MATCH (s2:School) -[r2:HAS_TOPIC]-&gt; (t2:Topic)
+WHERE NOT(EXISTS((s2)-[:HAS_TOPIC]-&gt;(:Topic {topic:'Colleges and Universities'})) OR 
+      EXISTS((s2)-[:HAS_TOPIC]-&gt;(:Topic {topic:'Higher Education'})))
+RETURN 'no topic' as topic,
+       avg(s2.ape) as ape, 
+       avg(s2.sat75) as sat75,
+       avg(s2.iqr) as iqr,
+       avg(s2.applcn) as apps,
+       avg(s2.enrlft) as enrollment,
+       count(DISTINCT s2) as total_rels
+"</span>
+<span class="n">dat</span> <span class="o">=</span> <span class="n">cypher</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+<span class="n">pander</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
 </code></pre></div>
 <table><thead>
 <tr>
@@ -575,19 +575,19 @@ pander<span class="p">(</span>dat<span class="p">)</span>
 <h2>School Competition and Mission Statement Topics</h2>
 
 <p>I wanted to highlight how easy it is to answer some really complex questions using Neo4j.  The table below looks isolates Harvard, finds the institutions which they are <code>SIMILAR_TO</code>, and collects the topics found within each school&#39;s mission statements.  </p>
-<div class="highlight"><pre><code class="language-r" data-lang="r">query <span class="o">=</span> <span class="s">&quot;</span>
-<span class="s">MATCH (s:School {unitid: 166027}) -[:HAS_TOPIC]-&gt; (t:Topic)</span>
-<span class="s">RETURN s.instnm as school, COLLECT(t.topic) as topics</span>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="n">query</span> <span class="o">=</span> <span class="s2">"
+MATCH (s:School {unitid: 166027}) -[:HAS_TOPIC]-&gt; (t:Topic)
+RETURN s.instnm as school, COLLECT(t.topic) as topics
 
-<span class="s">UNION</span>
+UNION
 
-<span class="s">MATCH (s:School)-[:SIMILAR_TO]-&gt;(y:School)-[:HAS_TOPIC]-&gt;(t:Topic)</span>
-<span class="s">WHERE s.unitid = 166027</span>
-<span class="s">RETURN y.instnm as school, COLLECT(t.topic) as topics</span>
-<span class="s">&quot;</span>
+MATCH (s:School)-[:SIMILAR_TO]-&gt;(y:School)-[:HAS_TOPIC]-&gt;(t:Topic)
+WHERE s.unitid = 166027
+RETURN y.instnm as school, COLLECT(t.topic) as topics
+"</span>
 
-dat <span class="o">=</span> cypher<span class="p">(</span>graph<span class="p">,</span> query<span class="p">)</span>
-pander<span class="p">(</span>dat<span class="p">)</span>
+<span class="n">dat</span> <span class="o">=</span> <span class="n">cypher</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+<span class="n">pander</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
 </code></pre></div>
 <table><thead>
 <tr>

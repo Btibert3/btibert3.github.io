@@ -69,49 +69,49 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <h2>A Basic Model</h2>
 
 <p>The code and data model below are intended to highlight a simple proof-of-concept about how you might leverage graphViz to make the data-modeling tasks in Neo4j easier.</p>
-<div class="highlight"><pre><code class="language-r" data-lang="r">grViz<span class="p">(</span><span class="s">&quot;</span>
-<span class="s">      digraph neo4j {</span>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="n">grViz</span><span class="p">(</span><span class="s2">"
+      digraph neo4j {
 
-<span class="s">      # a &#39;graph&#39; statement</span>
-<span class="s">      graph [overlap = false, fontsize = 10]</span>
+      # a 'graph' statement
+      graph [overlap = false, fontsize = 10]
 
-<span class="s">      # several &#39;node&#39; statements</span>
-<span class="s">      node [shape = circle, fontname = Helvetica]</span>
-<span class="s">      a [label = &#39;Student&#39;]; </span>
-<span class="s">      b [label = &#39;@@1-1&#39;];</span>
-<span class="s">      c [label = &#39;@@1-2&#39;];</span>
-<span class="s">      d [label = &#39;@@1-3&#39;];</span>
-<span class="s">      e [label = &#39;@@1-4&#39;];</span>
-<span class="s">      f [label = &#39;@@1-5&#39;];</span>
-<span class="s">      g [label = &#39;Marketing Persona&#39;];</span>
-<span class="s">      h [label = &#39;Gender&#39;];</span>
-<span class="s">      i [label = &#39;State&#39;];</span>
-<span class="s">      j [label = &#39;Region&#39;];</span>
-<span class="s">      k [label = &#39;@@2-1&#39;];</span>
-<span class="s">      l [label = &#39;@@2-2&#39;];</span>
-<span class="s">      m [label = &#39;@@2-3&#39;];</span>
-<span class="s">      n [label = &#39;@@2-4&#39;];</span>
+      # several 'node' statements
+      node [shape = circle, fontname = Helvetica]
+      a [label = 'Student']; 
+      b [label = '@@1-1'];
+      c [label = '@@1-2'];
+      d [label = '@@1-3'];
+      e [label = '@@1-4'];
+      f [label = '@@1-5'];
+      g [label = 'Marketing Persona'];
+      h [label = 'Gender'];
+      i [label = 'State'];
+      j [label = 'Region'];
+      k [label = '@@2-1'];
+      l [label = '@@2-2'];
+      m [label = '@@2-3'];
+      n [label = '@@2-4'];
 
-<span class="s">      # several &#39;edge&#39; statements</span>
-<span class="s">      a -&gt; b [label = &#39;WAS_SENT&#39; fontsize = 9.5];</span>
-<span class="s">      b -&gt; c [label = &#39;NEXT&#39;];</span>
-<span class="s">      c -&gt; d [label = &#39;NEXT&#39;];</span>
-<span class="s">      d -&gt; e [label = &#39;NEXT&#39;];</span>
-<span class="s">      e -&gt; f [label = &#39;NEXT&#39;];</span>
-<span class="s">      a -&gt; g [label = &#39;FROM_PERSONA&#39;];</span>
-<span class="s">      a -&gt; h [label = &#39;HAS_GENDER&#39;];</span>
-<span class="s">      a -&gt; i [label = &#39;LIVES_IN&#39;];</span>
-<span class="s">      i -&gt; j [label = &#39;IS_IN&#39;];</span>
-<span class="s">      a -&gt; k [label = &#39;HAS_INTERACTION&#39; fontsize = 9.5];</span>
-<span class="s">      k -&gt; l [label = &#39;NEXT&#39;];</span>
-<span class="s">      l -&gt; m [label = &#39;NEXT&#39;];</span>
-<span class="s">      m -&gt; n [label = &#39;NEXT&#39;];</span>
-<span class="s">      }</span>
+      # several 'edge' statements
+      a -&gt; b [label = 'WAS_SENT' fontsize = 9.5];
+      b -&gt; c [label = 'NEXT'];
+      c -&gt; d [label = 'NEXT'];
+      d -&gt; e [label = 'NEXT'];
+      e -&gt; f [label = 'NEXT'];
+      a -&gt; g [label = 'FROM_PERSONA'];
+      a -&gt; h [label = 'HAS_GENDER'];
+      a -&gt; i [label = 'LIVES_IN'];
+      i -&gt; j [label = 'IS_IN'];
+      a -&gt; k [label = 'HAS_INTERACTION' fontsize = 9.5];
+      k -&gt; l [label = 'NEXT'];
+      l -&gt; m [label = 'NEXT'];
+      m -&gt; n [label = 'NEXT'];
+      }
 
-<span class="s">      [1]: rep(&#39;Email&#39;, 5)</span>
-<span class="s">      [2]: rep(&#39;Interaction&#39;, 4)</span>
-<span class="s">      &quot;</span><span class="p">,</span>
-engine <span class="o">=</span> <span class="s">&quot;circo&quot;</span><span class="p">)</span>
+      [1]: rep('Email', 5)
+      [2]: rep('Interaction', 4)
+      "</span><span class="p">,</span>
+<span class="n">engine</span> <span class="o">=</span> <span class="s2">"circo"</span><span class="p">)</span>
 </code></pre></div>
 <p><img src="https://dl.dropboxusercontent.com/u/15276022/blog-images/diagrammer-testing/diagrammer-testing.png" alt="example"></p>
 

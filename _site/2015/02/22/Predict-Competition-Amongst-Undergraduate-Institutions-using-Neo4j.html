@@ -68,17 +68,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <h2>The Dataset</h2>
 
 <p>As always, I am using <code>R</code> for my analysis.  Nicole White has created an awesome R package <a href="https://github.com/nicolewhite/RNeo4j">RNeo4j</a> to connect to Neo4j.  I am using that library below to connect to the database and wipe out all my data for a clean environment.</p>
-<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## load the library</span>
-<span class="kn">library</span><span class="p">(</span>RNeo4j<span class="p">)</span>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## load the library
+</span><span class="n">library</span><span class="p">(</span><span class="n">RNeo4j</span><span class="p">)</span>
 
-<span class="c1">## connect to the graph</span>
-graph <span class="o">=</span> startGraph<span class="p">(</span><span class="s">&quot;http://localhost:7474/db/data/&quot;</span><span class="p">)</span>
-graph<span class="o">$</span><span class="kp">version</span>
+<span class="c1">## connect to the graph
+</span><span class="n">graph</span> <span class="o">=</span> <span class="n">startGraph</span><span class="p">(</span><span class="s2">"http://localhost:7474/db/data/"</span><span class="p">)</span>
+<span class="n">graph</span><span class="o">$</span><span class="n">version</span>
 
-<span class="c1"># clear it out entirely</span>
-<span class="c1">## CAVEAT: deletes the data without user confirmation.  Do not copy and paste!</span>
-<span class="c1"># cypher(graph, &quot;MATCH (n) RETURN COUNT(n)&quot;)</span>
-clear<span class="p">(</span>graph<span class="p">,</span> input <span class="o">=</span> <span class="bp">F</span><span class="p">)</span>
+<span class="c1"># clear it out entirely
+## CAVEAT: deletes the data without user confirmation.  Do not copy and paste!
+# cypher(graph, "MATCH (n) RETURN COUNT(n)")
+</span><span class="n">clear</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">input</span> <span class="o">=</span> <span class="n">F</span><span class="p">)</span>
 </code></pre></div>
 <p>Now that we have a clean database, let&#39;s talk about the data.</p>
 
@@ -180,23 +180,23 @@ clear<span class="p">(</span>graph<span class="p">,</span> input <span class="o"
 <p>Since we are trying to build a model that predicts if one school is defined as <strong>smililar</strong> to another, we need to remove a small portion of our dataset in order to validate the accuracy of that estimate.  </p>
 
 <p>The code below is how I randomly deleted a few edges from our graph in order to retain a test dataset</p>
-<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## ensure that there are 25 rows for each school</span>
-tmp <span class="o">=</span> tbl_df<span class="p">(</span>edges<span class="p">)</span> <span class="o">%&gt;%</span> group_by<span class="p">(</span>from_unitid<span class="p">)</span> <span class="o">%&gt;%</span> summarise<span class="p">(</span>num <span class="o">=</span> <span class="kp">length</span><span class="p">(</span>to_unitid<span class="p">))</span>
-tmp <span class="o">=</span> filter<span class="p">(</span>tmp<span class="p">,</span> num <span class="o">==</span> <span class="m">25</span><span class="p">)</span>
-edges <span class="o">=</span> <span class="kp">subset</span><span class="p">(</span>edges<span class="p">,</span> from_unitid <span class="o">%in%</span> tmp<span class="o">$</span>from_unitid<span class="p">)</span>
-<span class="kp">rm</span><span class="p">(</span>tmp<span class="p">)</span>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## ensure that there are 25 rows for each school
+</span><span class="n">tmp</span> <span class="o">=</span> <span class="n">tbl_df</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span> <span class="o">%&gt;%</span> <span class="n">group_by</span><span class="p">(</span><span class="n">from_unitid</span><span class="p">)</span> <span class="o">%&gt;%</span> <span class="n">summarise</span><span class="p">(</span><span class="n">num</span> <span class="o">=</span> <span class="n">length</span><span class="p">(</span><span class="n">to_unitid</span><span class="p">))</span>
+<span class="n">tmp</span> <span class="o">=</span> <span class="n">filter</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">num</span> <span class="o">==</span> <span class="m">25</span><span class="p">)</span>
+<span class="n">edges</span> <span class="o">=</span> <span class="n">subset</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">from_unitid</span> <span class="o">%</span><span class="k">in</span><span class="o">%</span> <span class="n">tmp</span><span class="o">$</span><span class="n">from_unitid</span><span class="p">)</span>
+<span class="n">rm</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
 
-<span class="c1">## split into the traing and test dataset</span>
-ROWS <span class="o">=</span> <span class="kp">sample</span><span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="kp">nrow</span><span class="p">(</span>edges<span class="p">),</span> <span class="m">150</span><span class="p">,</span> replace<span class="o">=</span><span class="bp">F</span><span class="p">)</span>
+<span class="c1">## split into the traing and test dataset
+</span><span class="n">ROWS</span> <span class="o">=</span> <span class="n">sample</span><span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="n">nrow</span><span class="p">(</span><span class="n">edges</span><span class="p">),</span> <span class="m">150</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="n">F</span><span class="p">)</span>
 
-<span class="c1">## training graph</span>
-graph_test<span class="o">=</span> edges<span class="p">[</span>ROWS<span class="p">,</span> <span class="p">]</span>
-graph_train <span class="o">=</span> edges<span class="p">[</span><span class="o">-</span>ROWS<span class="p">,]</span>
-<span class="kp">rm</span><span class="p">(</span>ROWS<span class="p">)</span>
+<span class="c1">## training graph
+</span><span class="n">graph_test</span><span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="n">ROWS</span><span class="p">,</span> <span class="p">]</span>
+<span class="n">graph_train</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="o">-</span><span class="n">ROWS</span><span class="p">,]</span>
+<span class="n">rm</span><span class="p">(</span><span class="n">ROWS</span><span class="p">)</span>
 
-<span class="c1">## how many unique schools in the test dataset</span>
-<span class="kp">length</span><span class="p">(</span><span class="kp">unique</span><span class="p">(</span>graph_test<span class="o">$</span>from_unitid<span class="p">))</span>
-<span class="kp">save</span><span class="p">(</span>graph_test<span class="p">,</span> graph_train<span class="p">,</span> edges<span class="p">,</span> file<span class="o">=</span><span class="s">&quot;data/graph-data.rdata&quot;</span><span class="p">)</span>
+<span class="c1">## how many unique schools in the test dataset
+</span><span class="n">length</span><span class="p">(</span><span class="n">unique</span><span class="p">(</span><span class="n">graph_test</span><span class="o">$</span><span class="n">from_unitid</span><span class="p">))</span>
+<span class="n">save</span><span class="p">(</span><span class="n">graph_test</span><span class="p">,</span> <span class="n">graph_train</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="s2">"data/graph-data.rdata"</span><span class="p">)</span>
 </code></pre></div>
 <h2>Database Creation</h2>
 
@@ -209,54 +209,54 @@ graph_train <span class="o">=</span> edges<span class="p">[</span><span class="o
 <p>Because of this, we can start to map out the competitive landscape within higher education.  Even though the dataset comes from only one college search site, it&#39;s a start, and allows us to look at who are competitors are competing with.  That&#39;s some powerful stuff! </p>
 
 <p>Before we do any analysis, we need to put the data into Neo4j.</p>
-<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## set the constraints first</span>
-addConstraint<span class="p">(</span>graph<span class="p">,</span> <span class="s">&quot;School&quot;</span><span class="p">,</span> <span class="s">&quot;unitid&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## set the constraints first
+</span><span class="n">addConstraint</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="s2">"School"</span><span class="p">,</span> <span class="s2">"unitid"</span><span class="p">)</span>
 
-<span class="c1">## the query </span>
-query <span class="o">=</span> <span class="s">&quot;</span>
-<span class="s">MERGE (s1:School { unitid:{from_unitid} } )</span>
-<span class="s">ON CREATE SET s1.rating = {from_rating}</span>
-<span class="s">MERGE (s2:School { unitid:{to_unitid} } )</span>
-<span class="s">ON CREATE SET s2.rating = {to_rating}</span>
-<span class="s">CREATE (s1) -[r:SIMILAR_TO {rank:{from_rank}}]-&gt; (s2)</span>
-<span class="s">&quot;</span>
+<span class="c1">## the query 
+</span><span class="n">query</span> <span class="o">=</span> <span class="s2">"
+MERGE (s1:School { unitid:{from_unitid} } )
+ON CREATE SET s1.rating = {from_rating}
+MERGE (s2:School { unitid:{to_unitid} } )
+ON CREATE SET s2.rating = {to_rating}
+CREATE (s1) -[r:SIMILAR_TO {rank:{from_rank}}]-&gt; (s2)
+"</span>
 
-<span class="c1">## start the initial transaction</span>
-tx <span class="o">=</span> newTransaction<span class="p">(</span>graph<span class="p">)</span>
+<span class="c1">## start the initial transaction
+</span><span class="n">tx</span> <span class="o">=</span> <span class="n">newTransaction</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
 
-<span class="c1">## just using the small dataset for exploring and valid queries</span>
-start <span class="o">=</span> <span class="kp">Sys.time</span><span class="p">()</span>
-<span class="kr">for</span> <span class="p">(</span>i <span class="kr">in</span> <span class="m">1</span><span class="o">:</span><span class="kp">nrow</span><span class="p">(</span>graph_train<span class="p">))</span> <span class="p">{</span>
- <span class="c1">## for every 500 rows, commit the transaction</span>
- <span class="kr">if</span> <span class="p">(</span>i <span class="o">%%</span> <span class="m">500</span> <span class="o">==</span> <span class="m">0</span><span class="p">)</span> <span class="p">{</span>
-  <span class="c1"># commit the transaction</span>
-  commit<span class="p">(</span>tx<span class="p">)</span>
-  <span class="kp">cat</span><span class="p">(</span><span class="s">&quot;Batch &quot;</span><span class="p">,</span> i<span class="o">/</span><span class="m">500</span><span class="p">,</span> <span class="s">&quot; committed \n&quot;</span><span class="p">)</span>
-  <span class="c1"># open a new transaction</span>
-  tx <span class="o">=</span> newTransaction<span class="p">(</span>graph<span class="p">)</span>
+<span class="c1">## just using the small dataset for exploring and valid queries
+</span><span class="n">start</span> <span class="o">=</span> <span class="n">Sys.time</span><span class="p">()</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="k">in</span> <span class="m">1</span><span class="o">:</span><span class="n">nrow</span><span class="p">(</span><span class="n">graph_train</span><span class="p">))</span> <span class="p">{</span>
+ <span class="c1">## for every 500 rows, commit the transaction
+</span> <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">%%</span> <span class="m">500</span> <span class="o">==</span> <span class="m">0</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1"># commit the transaction
+</span>  <span class="n">commit</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span>
+  <span class="n">cat</span><span class="p">(</span><span class="s2">"Batch "</span><span class="p">,</span> <span class="n">i</span><span class="o">/</span><span class="m">500</span><span class="p">,</span> <span class="s2">" committed \n"</span><span class="p">)</span>
+  <span class="c1"># open a new transaction
+</span>  <span class="n">tx</span> <span class="o">=</span> <span class="n">newTransaction</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
  <span class="p">}</span>
 
- <span class="c1">## create the parameter values</span>
- from_unitid <span class="o">=</span> graph_train<span class="p">[</span>i<span class="p">,</span> <span class="p">]</span><span class="o">$</span>from_unitid
- from_rating <span class="o">=</span> graph_train<span class="p">[</span>i<span class="p">,</span> <span class="p">]</span><span class="o">$</span>from_rating
- to_unitid <span class="o">=</span> graph_train<span class="p">[</span>i<span class="p">,</span> <span class="p">]</span><span class="o">$</span>to_unitid
- to_rating <span class="o">=</span> graph_train<span class="p">[</span>i<span class="p">,</span> <span class="p">]</span><span class="o">$</span>to_rating
- from_rank <span class="o">=</span> graph_train<span class="p">[</span>i<span class="p">,</span> <span class="p">]</span><span class="o">$</span>from_rank
+ <span class="c1">## create the parameter values
+</span> <span class="n">from_unitid</span> <span class="o">=</span> <span class="n">graph_train</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">]</span><span class="o">$</span><span class="n">from_unitid</span>
+ <span class="n">from_rating</span> <span class="o">=</span> <span class="n">graph_train</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">]</span><span class="o">$</span><span class="n">from_rating</span>
+ <span class="n">to_unitid</span> <span class="o">=</span> <span class="n">graph_train</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">]</span><span class="o">$</span><span class="n">to_unitid</span>
+ <span class="n">to_rating</span> <span class="o">=</span> <span class="n">graph_train</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">]</span><span class="o">$</span><span class="n">to_rating</span>
+ <span class="n">from_rank</span> <span class="o">=</span> <span class="n">graph_train</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">]</span><span class="o">$</span><span class="n">from_rank</span>
 
- <span class="c1">## appead the query</span>
- appendCypher<span class="p">(</span>tx<span class="p">,</span> 
-              query<span class="p">,</span> 
-              from_unitid <span class="o">=</span> from_unitid<span class="p">,</span> 
-              from_rating <span class="o">=</span> from_rating<span class="p">,</span> 
-              to_unitid <span class="o">=</span> to_unitid<span class="p">,</span>
-              to_rating <span class="o">=</span> to_rating<span class="p">,</span>
-              from_rank <span class="o">=</span> from_rank<span class="p">)</span>
-<span class="p">}</span> <span class="c1">#endfor</span>
-
-<span class="c1">## committ the last transaction and record the time it takes</span>
-commit<span class="p">(</span>tx<span class="p">)</span>
-end <span class="o">=</span> <span class="kp">Sys.time</span><span class="p">()</span>
-end <span class="o">-</span> start
+ <span class="c1">## appead the query
+</span> <span class="n">appendCypher</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> 
+              <span class="n">query</span><span class="p">,</span> 
+              <span class="n">from_unitid</span> <span class="o">=</span> <span class="n">from_unitid</span><span class="p">,</span> 
+              <span class="n">from_rating</span> <span class="o">=</span> <span class="n">from_rating</span><span class="p">,</span> 
+              <span class="n">to_unitid</span> <span class="o">=</span> <span class="n">to_unitid</span><span class="p">,</span>
+              <span class="n">to_rating</span> <span class="o">=</span> <span class="n">to_rating</span><span class="p">,</span>
+              <span class="n">from_rank</span> <span class="o">=</span> <span class="n">from_rank</span><span class="p">)</span>
+<span class="p">}</span> <span class="c1">#endfor
+</span>
+<span class="c1">## committ the last transaction and record the time it takes
+</span><span class="n">commit</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span>
+<span class="n">end</span> <span class="o">=</span> <span class="n">Sys.time</span><span class="p">()</span>
+<span class="n">end</span> <span class="o">-</span> <span class="n">start</span>
 </code></pre></div>
 <p>Using cypher transactions, as I did above, isn&#39;t the fastest way of getting data into Neo4j, but it&#39;s clean and easy to read.  For reference, it took a tad over 12 minutes to put our training dataset into the database.  </p>
 
@@ -265,48 +265,48 @@ end <span class="o">-</span> start
 <h2>Explore the data</h2>
 
 <p>Now let&#39;s confirm that we have some data.</p>
-<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## make sure we are connected</span>
-graph <span class="o">=</span> startGraph<span class="p">(</span><span class="s">&quot;http://localhost:7474/db/data/&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## make sure we are connected
+</span><span class="n">graph</span> <span class="o">=</span> <span class="n">startGraph</span><span class="p">(</span><span class="s2">"http://localhost:7474/db/data/"</span><span class="p">)</span>
 
-<span class="c1">## the number of nodes</span>
-cypher<span class="p">(</span>graph<span class="p">,</span>
-       <span class="s">&quot;</span>
-<span class="s">       MATCH (n)</span>
-<span class="s">       RETURN COUNT(n) as `Total Nodes`</span>
-<span class="s">       &quot;</span><span class="p">)</span>
-</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">  Total Nodes
+<span class="c1">## the number of nodes
+</span><span class="n">cypher</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span>
+       <span class="s2">"
+       MATCH (n)
+       RETURN COUNT(n) as `Total Nodes`
+       "</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-" data-lang="">  Total Nodes
 1        3477
-</code></pre></div><div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## summary of the data model</span>
-<span class="kp">summary</span><span class="p">(</span>graph<span class="p">)</span>
-</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">    This         To   That
+</code></pre></div><div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## summary of the data model
+</span><span class="n">summary</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-" data-lang="">    This         To   That
 1 School SIMILAR_TO School
-</code></pre></div><div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## how many relationships</span>
-cypher<span class="p">(</span>graph<span class="p">,</span>
-       <span class="s">&quot;</span>
-<span class="s">       MATCH () -[r]- () </span>
-<span class="s">       WITH r </span>
-<span class="s">       RETURN type(r), count(*) as total</span>
-<span class="s">       &quot;</span><span class="p">)</span>
-</code></pre></div><div class="highlight"><pre><code class="language-text" data-lang="text">     type(r)  total
+</code></pre></div><div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## how many relationships
+</span><span class="n">cypher</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span>
+       <span class="s2">"
+       MATCH () -[r]- () 
+       WITH r 
+       RETURN type(r), count(*) as total
+       "</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre><code class="language-" data-lang="">     type(r)  total
 1 SIMILAR_TO 161860
 </code></pre></div>
 <p>Finally, let&#39;s look at a quick plot from a small subset of the data</p>
-<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## the query</span>
-query <span class="o">=</span> <span class="s">&quot;</span>
-<span class="s">MATCH (n)-[r]-&gt;(b)</span>
-<span class="s">RETURN n.unitid AS from, b.unitid AS to, r.rank AS rank</span>
-<span class="s">LIMIT 50</span>
-<span class="s">&quot;</span>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1">## the query
+</span><span class="n">query</span> <span class="o">=</span> <span class="s2">"
+MATCH (n)-[r]-&gt;(b)
+RETURN n.unitid AS from, b.unitid AS to, r.rank AS rank
+LIMIT 50
+"</span>
 
-<span class="c1">## the dataframe</span>
-dat <span class="o">=</span> cypher<span class="p">(</span>graph<span class="p">,</span> query<span class="p">)</span>
-dat<span class="o">$</span>rand <span class="o">=</span> <span class="kc">NULL</span>
+<span class="c1">## the dataframe
+</span><span class="n">dat</span> <span class="o">=</span> <span class="n">cypher</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+<span class="n">dat</span><span class="o">$</span><span class="n">rand</span> <span class="o">=</span> <span class="n">NULL</span>
 
-<span class="c1">## graph the dataframe</span>
-g <span class="o">=</span> graph.data.frame<span class="p">(</span>dat<span class="p">,</span> directed <span class="o">=</span> <span class="bp">T</span><span class="p">)</span>
+<span class="c1">## graph the dataframe
+</span><span class="n">g</span> <span class="o">=</span> <span class="n">graph.data.frame</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">directed</span> <span class="o">=</span> <span class="n">T</span><span class="p">)</span>
 
-<span class="c1">## simple plot</span>
-ggnet<span class="p">(</span>g<span class="p">,</span> size<span class="o">=</span><span class="m">10</span><span class="p">)</span>
+<span class="c1">## simple plot
+</span><span class="n">ggnet</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="m">10</span><span class="p">)</span>
 </code></pre></div>
 <p><img src="http://btibert3.github.io/images/predict-competition-amongst-undergraduate-institutions-using-neo4j-netplot-1.png" alt="plot of chunk netplot"> </p>
 
@@ -368,14 +368,14 @@ ggnet<span class="p">(</span>g<span class="p">,</span> size<span class="o">=</sp
 <p>Let&#39;s see how the recommendation did.</p>
 
 <p>First, in order to measure how well our simple model performs, we need to understand the <strong><em>compared to what</em></strong> question.  To create this baseline, we go back to our original dataset, identify the most popular schools, and then select the most popular insitution not already listed by the school of interest.  This is just a <code>Top-N</code> prediction.  </p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">pop_accurate
+<div class="highlight"><pre><code class="language-" data-lang="">pop_accurate
 FALSE 
   150 
 </code></pre></div>
 <p>From above, we can see that the <code>Top-N</code> prediction did not predict any connections correctly, as evidenced by the 150 underneath the <code>FALSE</code>.  In reality, if my test set was larger than 150 edges, undoubtedly we would have got a handful of correct guesses.  </p>
 
 <p>Now, let&#39;s look at the model.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">pred_accurate
+<div class="highlight"><pre><code class="language-" data-lang="">pred_accurate
 FALSE  TRUE 
   105    45 
 </code></pre></div>

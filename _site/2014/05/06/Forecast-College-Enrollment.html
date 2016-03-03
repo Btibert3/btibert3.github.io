@@ -107,33 +107,33 @@ help you in your journey.</p>
 
 <p>With <code>R</code>, it&#39;s super simple to grab data from the web. The command below
 will download the WICHE Excel Workbook.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">## download the dataset into your working directory
+<div class="highlight"><pre><code class="language-" data-lang="">## download the dataset into your working directory
 ## use mode option below so the file can open in R, error w/o it
-WICHE_DATA = &quot;http://wiche.edu/info/knocking-8th/tables/allProjections.xlsx&quot;
-download.file(url=WICHE_DATA, destfile=&quot;raw/wiche.xlsx&quot;, mode=&quot;wb&quot;)
+WICHE_DATA = "http://wiche.edu/info/knocking-8th/tables/allProjections.xlsx"
+download.file(url=WICHE_DATA, destfile="raw/wiche.xlsx", mode="wb")
 </code></pre></div>
 <p>It should be noted that the code above assumes that your current
 directory (where you are running the code) has a folder called <code>raw</code>. To
 assure that this is the case, just do this:</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">## ensure that we have a directory to store the raw data
-if (!file.exists(&quot;raw&quot;)) dir.create(&quot;raw&quot;)
-if (!file.exists(&quot;figs&quot;)) dir.create(&quot;figs&quot;)
+<div class="highlight"><pre><code class="language-" data-lang="">## ensure that we have a directory to store the raw data
+if (!file.exists("raw")) dir.create("raw")
+if (!file.exists("figs")) dir.create("figs")
 </code></pre></div>
 <p>Now we can use the <code>RODBC</code> package (on Windows) to connect to the
 workbook and query it as if the sheets were database tables.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">xl = odbcConnectExcel2007(&quot;raw/wiche.xlsx&quot;)
+<div class="highlight"><pre><code class="language-" data-lang="">xl = odbcConnectExcel2007("raw/wiche.xlsx")
 </code></pre></div>
 <p>Because each state is a tab in the workbook, let&#39;s use <code>R</code> to define an
 object that holds the state abbreivations, which we will use while
 looping through the workbook.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">## how cool is it that R has the State names and Abbreviations preloaded?
+<div class="highlight"><pre><code class="language-" data-lang="">## how cool is it that R has the State names and Abbreviations preloaded?
 ?state.name
 (states = state.name)
 length(states)
-states = c(states, &quot;District of Columbia&quot;)
+states = c(states, "District of Columbia")
 </code></pre></div>
 <p>Finally, let&#39;s loop and build a dataset in the format we want:</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">## use a for loop -- not ideal but easy to read and debug
+<div class="highlight"><pre><code class="language-" data-lang="">## use a for loop -- not ideal but easy to read and debug
 wiche = data.frame(stringsAsFactors=FALSE)
 for (state in states) {
  raw = sqlFetch(xl, state, stringsAsFactors=FALSE)
@@ -142,28 +142,28 @@ for (state in states) {
  ROWS = 9:40
  COLS = c(1, 3:10)
  ## create a flag for actual/projected -- hard coded from looking at Excel file
- status = c(rep(&quot;actual&quot;, 13), rep(&quot;projected&quot;, 19))
+ status = c(rep("actual", 13), rep("projected", 19))
  ## keep the data
  df = raw[ROWS, COLS]
- colnames(df) = c(&#39;year&#39;,
-                  &#39;pub_amind&#39;,
-                  &#39;pub_asian&#39;,
-                  &#39;pub_black&#39;,
-                  &#39;pub_hisp&#39;,
-                  &#39;pub_white&#39;,
-                  &#39;pub_total&#39;,
-                  &#39;np_total&#39;,
-                  &#39;total&#39;)
+ colnames(df) = c('year',
+                  'pub_amind',
+                  'pub_asian',
+                  'pub_black',
+                  'pub_hisp',
+                  'pub_white',
+                  'pub_total',
+                  'np_total',
+                  'total')
  ## remove the commas -- using a for loop not ideal, but intuitive
  for (i in 2:ncol(df)) {
-  df[,i] = as.numeric(gsub(&quot;,&quot;,&quot;&quot;, df[,i]))
+  df[,i] = as.numeric(gsub(",","", df[,i]))
  }
  df$state = state
  df$status = status
  ## bind onto the master data frame
  wiche = rbind.fill(wiche, df)
  ## status
- cat(&quot;finished &quot;, state, &quot;\n&quot;)
+ cat("finished ", state, "\n")
 }
 </code></pre></div>
 <h2>A quick plot</h2>

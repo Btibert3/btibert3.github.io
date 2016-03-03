@@ -60,14 +60,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <p>If you haven&#39;t already, play around with the <code>neo4j-shell</code> and the <code>LOAD CSV</code> functionality.  It&#39;s pretty fast and can handle files of a few million records.  </p>
 
 <p>The snippet below is a quick way to simply call that procedure from within your <code>R</code> script.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">NEO_SHELL = &quot;~/neo4j-community-2.3.1/bin/neo4j-shell&quot;
+<div class="highlight"><pre><code class="language-" data-lang="">NEO_SHELL = "~/neo4j-community-2.3.1/bin/neo4j-shell"
 build_import = function(neo_shell, cypher_file) {
-  cmd = sprintf(&quot;%s -file %s&quot;, neo_shell, cypher_file)
+  cmd = sprintf("%s -file %s", neo_shell, cypher_file)
   system(cmd)
 }
 </code></pre></div>
 <p>Just point to your shell and store it in the variable <code>NEO_SHELL</code>.  From calling it is simple.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">build_import(NEO_SHELL, &quot;../cypher/add-contstraints.cql&quot;)
+<div class="highlight"><pre><code class="language-" data-lang="">build_import(NEO_SHELL, "../cypher/add-contstraints.cql")
 </code></pre></div>
 <p>I simply reference the shell, and pass a text file that contains my cypher statements.  </p>
 
@@ -85,9 +85,9 @@ build_import = function(neo_shell, cypher_file) {
 </ol>
 
 <p>The process below will bring in a cypher query as a statement into <code>R</code> that can be further passed to the cypher function. </p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">## read the cypher query into a string variable  
+<div class="highlight"><pre><code class="language-" data-lang="">## read the cypher query into a string variable  
 ## http://stackoverflow.com/questions/9068397/import-text-file-as-single-character-string  
-FILE = &quot;../cypher/get-edges.cql&quot;
+FILE = "../cypher/get-edges.cql"
 cypher_edges = readChar(FILE,file.info(FILE)$size)
 
 ## get the edges

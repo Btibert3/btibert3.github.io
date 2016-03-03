@@ -1,0 +1,168 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Brock Tibert - Enrollment Nerdery</title>
+
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/styles.css">
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+  
+<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-TFFDQX"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-TFFDQX');</script>
+<!-- End Google Tag Manager -->
+
+<div class="wrapper">
+  <header>
+    <h1><a href="http://btibert3.github.io"><b>Enrollment Nerdery</b></a></h1>
+    <p>
+    A place to collect my thoughts on data analysis within Enrollment Management. Dare I call it Enrollment Science?
+    </p>
+
+	<img src="/assets/cartoon.png" >
+	<br><br>
+	<p>Where you can find me<br>
+		<a href="https://github.com/btibert3" target="_blank">GitHub</a><br>
+		<a href="https://twitter.com/brocktibert" target="_blank">Twitter</a><br>
+		<a href="https://www.linkedin.com/in/brocktibert" target="_blank">LinkedIn</a><br>
+		<a href="http://btibert3.github.io/resume/build/index.html" target="_blank">Resume</a><br>
+		<a href="mailto:btibert3@gmail.com">Email</a>
+	</p>
+
+  </header>
+
+<section>
+	<p>Below is a quick writeup on how I use <code>R</code> and <code>RNeo4j</code> to munge my data and throw &quot;larger&quot; datasets into Neo4j.  In short, I am fairly capable in R, so I prefer to use it to do the heavy lifting.  </p>
+
+<p>All I am doing is calling the <code>neo4j-shell</code> tool via <code>?system</code> command. This post runs through how I have used this approach in some of my recent projects.  I used this process for a project that I am currently working on at work, where 3+ million nodes and nearly 9 million relationships.  </p>
+
+<h2>Basic project structure</h2>
+
+<p>Below is a basic project structure when I am combining R and <code>Neo4j</code></p>
+<div class="highlight"><pre><code class="language-" data-lang="">neo-project/
+├── R
+│   ├── 1-get-data.R
+│   ├── 2-clean-data.R
+│   └── 3-import-data.R
+├── README.md
+├── cql
+│   ├── constraints.cql
+│   └── import-nodes.cql
+└── data
+    ├── file1.csv
+    └── file2.csv
+
+3 directories, 8 files
+</code></pre></div>
+<p>There are many ways to organize projects, but I recommend that you stick with one that works for you. </p>
+
+<h2>General Process</h2>
+
+<ol>
+<li> Collect, clean, build out my datasets using R<br></li>
+<li> Save the datasets as <code>csv</code> files</li>
+<li> Import the data into Neo4j via R and <code>neo4j-shell</code> </li>
+</ol>
+
+<p>On the third step above, I am using a helper function, shown below.</p>
+
+<h2>Helper Function</h2>
+<div class="highlight"><pre><code class="language-" data-lang="">### helper function to load a CQL file into neo4j shell
+build_import = function(neo_shell = "~/neo4j-community-2.3.1/bin/neo4j-shell", 
+                        cypher_file) {
+  cmd = sprintf("%s -file %s", neo_shell, cypher_file)
+  system(cmd)
+}
+</code></pre></div>
+<p>In my case, I am simply running a community edition, and point to the path of the <code>neo4j-shell</code> tool.  If you get an error, you may need to ensure that:</p>
+
+<ol>
+<li> The database is running<br></li>
+<li> You are pointed to the proper location for the shell tool</li>
+</ol>
+
+<p>After that, usage is simple within your R script.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">build_import(cypher_file = "../cql/import-geo.cql")
+</code></pre></div>
+<p>The <code>RNeo4j</code> package is great, and in particular, I love the <code>?clear</code> function which helps us rapidly prototype our data imports, the data model, etc.</p>
+
+<h2>Example Session</h2>
+
+<p>Below is an example session of what the R script <code>3-import-data.R</code> might look like.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">###############################################################################
+## Load the csvs through Cypher and the terminal 
+## in a non-Windows environment
+###############################################################################
+
+options(stringsAsFactors = FALSE)
+
+## the packages
+library(RNeo4j)
+
+## connect to a running db server
+graph = startGraph("http://localhost:7474/db/data/",
+                   username = "neo4j",
+                   password = "password")
+
+
+###############################################################################
+## helper function
+###############################################################################
+
+## cypher helper function to load against the shell tool
+build_import = function(neo_shell = "~/neo4j-community-2.3.1/bin/neo4j-shell", 
+                        cypher_file) {
+  cmd = sprintf("%s -file %s", neo_shell, cypher_file)
+  system(cmd)
+}
+
+
+###############################################################################
+## clear database for testing
+###############################################################################
+
+## clear the entire database
+clear(graph, input = FALSE)
+
+###############################################################################
+## load daata - 1 file per import
+###############################################################################
+
+build_import(cypher_file = "../cql/constraints.cql")
+build_import(cypher_file = "../cql/import-nodes.cql")
+
+</code></pre></div>
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'enrollmentnerdery'; // required: replace example with your forum shortname
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+</section>
+
+    </div>
+    <script src="/javascripts/scale.fix.js"></script>
+  </body>
+</html>

@@ -100,14 +100,14 @@ from the API.</p>
 <p>Before you can begin, you will need to install a few packages if you
 don&#39;t already have them loaded into <code>R</code>. The following codes will load
 the packages that you need for this post.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">install.packages(&quot;devtools&quot;)
+<div class="highlight"><pre><code class="language-" data-lang="">install.packages("devtools")
 library(devtools)
-install_github(&quot;rga&quot;, &quot;skardhamar&quot;)
-install.packages(&quot;ggplot2&quot;)
-install.packages(&quot;forecast&quot;)
+install_github("rga", "skardhamar")
+install.packages("ggplot2")
+install.packages("forecast")
 </code></pre></div>
 <p>Now let&#39;s load the packages that we will use to crunch our data.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">library(rga)
+<div class="highlight"><pre><code class="language-" data-lang="">library(rga)
 library(ggplot2)
 library(forecast)
 </code></pre></div>
@@ -115,11 +115,11 @@ library(forecast)
 disclosure, this is not an ideal workaround, but when using secure
 connections (i.e. the Analytics API) you need a certificate. Windows
 doesn&#39;t handle this that well out of the box.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">options(RCurlOptions = list(verbose = FALSE, capath = system.file(&quot;CurlSSL&quot;, 
-    &quot;cacert.pem&quot;, package = &quot;RCurl&quot;), ssl.verifypeer = FALSE))
+<div class="highlight"><pre><code class="language-" data-lang="">options(RCurlOptions = list(verbose = FALSE, capath = system.file("CurlSSL", 
+    "cacert.pem", package = "RCurl"), ssl.verifypeer = FALSE))
 </code></pre></div>
 <p>Let&#39;s connect to Google.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">rga.open(instance = &quot;ga&quot;)
+<div class="highlight"><pre><code class="language-" data-lang="">rga.open(instance = "ga")
 </code></pre></div>
 <p>This will fire up a browser tab and show a similar screen.</p>
 
@@ -144,7 +144,7 @@ authenticating with APIs around the web can be a real PITA.</p>
 <h2>Finally, the analysis</h2>
 
 <p>Take a look at the profiles that you have access to. Pretty cool huh?</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">ga$getProfiles()
+<div class="highlight"><pre><code class="language-" data-lang="">ga$getProfiles()
 </code></pre></div>
 <p>Keep note of the profile you want to query. The value you need is found
 in the <code>id</code> column.</p>
@@ -157,11 +157,11 @@ that you want to include in your queries.</p>
 
 <p>Below I am going to set some values that will be passed into a function
 that will query GA.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">ids = &quot;ga:XXXXXXXXXXX&quot;
-start.date = &quot;2013-01-01&quot;
-end.date = &quot;2013-10-31&quot;
-DIM = &quot;ga:date&quot;
-MET = &quot;ga:pageviews,ga:uniquePageviews,ga:entrances,ga:exits,ga:bounces,ga:timeOnPage&quot;
+<div class="highlight"><pre><code class="language-" data-lang="">ids = "ga:XXXXXXXXXXX"
+start.date = "2013-01-01"
+end.date = "2013-10-31"
+DIM = "ga:date"
+MET = "ga:pageviews,ga:uniquePageviews,ga:entrances,ga:exits,ga:bounces,ga:timeOnPage"
 </code></pre></div>
 <p>The value for <code>ids</code> is my GA profile id. <code>start.date</code> and <code>end.date</code>
 define the timeframe for our query. <code>DIM</code> defines the dimensions, which
@@ -169,8 +169,8 @@ simply is the <code>row</code> of our query. The columns, or metrics in
 Google-speak, are defined in the variable <code>MET</code>.</p>
 
 <p>Now let&#39;s get the data!</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">stats = ga$getData(ids, start.date, end.date, walk = TRUE, batch = TRUE, metrics = MET, 
-    dimensions = DIM, sort = &quot;&quot;, filters = &quot;&quot;, segment = &quot;&quot;)
+<div class="highlight"><pre><code class="language-" data-lang="">stats = ga$getData(ids, start.date, end.date, walk = TRUE, batch = TRUE, metrics = MET, 
+    dimensions = DIM, sort = "", filters = "", segment = "")
 </code></pre></div>
 <p>Above, all I am doing is saving the results of our API call to a
 variable call <code>stats</code>. I will just highlight this topic, but the
@@ -194,7 +194,7 @@ chart is nothing special and can easily be found in GA.</p>
 
 <p>However, the benefit of R is that we can now create a forecast from this
 data. We can&#39;t do this in Google Analytics.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">fit = auto.arima(stats$pageviews)
+<div class="highlight"><pre><code class="language-" data-lang="">fit = auto.arima(stats$pageviews)
 plot(forecast(fit), axes = F)
 </code></pre></div>
 <p><img src="data:image/png;base64,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" alt="forecast"></p>

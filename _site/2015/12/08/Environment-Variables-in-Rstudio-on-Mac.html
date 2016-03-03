@@ -64,8 +64,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <p>should yield what you need.</p>
 
 <p>Within python, you can get at it by:</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">import os
-os.getenv(&quot;YOUR_VAR&quot;)
+<div class="highlight"><pre><code class="language-" data-lang="">import os
+os.getenv("YOUR_VAR")
 </code></pre></div>
 <p>but if you are using <code>R</code> and <code>Rstudio</code>, <code>Sys.getenv(&quot;YOUR_VAR&quot;)</code> will return <code>&quot;&quot;</code>.</p>
 
@@ -79,7 +79,7 @@ touch .Renviron
 open .Renviron
 </code></pre></div>
 <p>And in the file, type</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">YOUR_VAR=&quot;abc123&quot;
+<div class="highlight"><pre><code class="language-" data-lang="">YOUR_VAR="abc123"
 </code></pre></div>
 <p>Save the file and restart/reopen Rstudio.  </p>
 
