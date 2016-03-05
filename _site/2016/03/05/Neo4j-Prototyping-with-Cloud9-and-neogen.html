@@ -1,0 +1,267 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Brock Tibert - Enrollment Nerdery</title>
+
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/styles.css">
+    <link rel="stylesheet" href="http://btibert3.github.io/stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+  
+<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-TFFDQX"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-TFFDQX');</script>
+<!-- End Google Tag Manager -->
+
+<div class="wrapper">
+  <header>
+    <h1><a href="http://btibert3.github.io"><b>Enrollment Nerdery</b></a></h1>
+    <p>
+    A place to collect my thoughts on data analysis within Enrollment Management. Dare I call it Enrollment Science?
+    </p>
+
+	<img src="/assets/cartoon.png" >
+	<br><br>
+	<p>Where you can find me<br>
+		<a href="https://github.com/btibert3" target="_blank">GitHub</a><br>
+		<a href="https://twitter.com/brocktibert" target="_blank">Twitter</a><br>
+		<a href="https://www.linkedin.com/in/brocktibert" target="_blank">LinkedIn</a><br>
+		<a href="http://btibert3.github.io/resume/build/index.html" target="_blank">Resume</a><br>
+		<a href="mailto:btibert3@gmail.com">Email</a>
+	</p>
+
+  </header>
+
+<section>
+	<h1>Prototype Neo4j Development with Cloud9 and the Graphgen Tool</h1>
+
+<p>If you have skimmed through some of my other posts on this blog, it&#39;s probably not surprising that I love using Neo4j in my projects.  While you certainly can develop and work through your ideas locally, if you are like me, you probably have a few pet projects going at once, some of which you might want to share publicly.  </p>
+
+<p>This post aims to highlight how quickly you can get up and running using <a href="https://c9.io/?redirect=0">Cloud9</a>, a cloud-based development environment.  There are other Neo4j-hosting solutions that you might want to look at, but since Cloud9 recently upgraded their instances to have 1 gig of memory and 5gb of disk space, I wanted to highlight that there are other options available. </p>
+
+<p>In future posts, I will talk about my work on using Neo4j to highlight how we can get smarter in higher education marketing and student recruitment.  Because I obviously can&#39;t show my institution&#39;s data publicly, I am also going to demonstrate how we can use the <a href="https://github.com/graphaware/graphgen">neogen</a> tool to simulate a real dataset and populate our database.  It&#39;s a really awesome tool that I will talk more about in a moment.</p>
+
+<h2>What you need</h2>
+
+<p>To follow along in this post, you don&#39;t need much.  In truth, all you really need to have is a Cloud9 account and an internet connection.  I won&#39;t go into how to create an account, but in my case, I simply sign in using my Github account.  It probably can&#39;t get much easier than that!</p>
+
+<h2>Getting Started</h2>
+
+<p>Once you are logged into Cloud9, spin up a new workspace. Below is the setup screen that you will most likely see.  </p>
+
+<p><img src="https://s3.amazonaws.com/upload.screenshot.co/346897007e" alt=""></p>
+
+<p>Above, I am creating a public Cloud9 instance, and will be using the Custom template, but you can see that there are other pre-configured options available.  </p>
+
+<blockquote>
+<p>As an aside, it would be great if they added more templates.  Selfishly, I would love to see a R/Rstudio Server template, and perhaps a Flask/postgres template.  Maybe one day .... </p>
+</blockquote>
+
+<p>When you are ready, spin up the instance.  You will probably see an image like below as the server is being set up.</p>
+
+<p><img src="https://s3.amazonaws.com/upload.screenshot.co/1accbf05f7" alt=""></p>
+
+<p>That might take a few moments, and when it has completed, you will have your own workspace in the cloud, accessible via the browser.  You should see something similar to the screen below.  </p>
+
+<p><img src="https://s3.amazonaws.com/upload.screenshot.co/a5cc664f24" alt=""></p>
+
+<p>On the left-hand side, we have a file tree, on the top is our text editor, and at the bottom, a terminal.  The workspace is totally customizable, so poke around and configure the environment to your liking.</p>
+
+<p>At this stage, we are ready to install Neo4j and graphgen.</p>
+
+<h2>Get the neogen Repo from Github</h2>
+
+<p>Now we want to clone the neogen repo, which will allow us to write <code>cypher</code> to generate fake data and populate our Neo4j database.  It&#39;s a really powerful tool.  We can prototype our data model and build-out real-life datasets to work through how we might solve a problem, without actually using real data. This is great when the data can not be distributed publicly or you are prototyping a solution and the data do not yet exist.</p>
+
+<p>Cloud9 already has <code>git</code> setup, so it&#39;s a simple command to clone the tool into our workspace.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">git clone https://github.com/neoxygen/neo4j-neogen.git
+</code></pre></div>
+<p>This should put the repo in your home directory.  </p>
+<div class="highlight"><pre><code class="language-" data-lang="">btibert3:~/workspace $ ls -l
+total 8
+-rw-rw-r-- 1 ubuntu ubuntu  699 Sep 24 12:24 README.md
+drwxr-xr-x 8 ubuntu ubuntu 4096 Mar  5 00:14 neo4j-neogen/
+</code></pre></div>
+<p>If you type <code>ls -l neo4j-neogen</code> you should see a number of files.  If you do, you should be (almost) good to go.</p>
+
+<h2>Install Neo4j</h2>
+
+<p>Now we will download the community version of neo4j 2.3.1  </p>
+<div class="highlight"><pre><code class="language-" data-lang="">wget "http://neo4j.com/artifact.php?name=neo4j-community-2.3.2-unix.tar.gz"
+</code></pre></div>
+<p>And unpack it  </p>
+<div class="highlight"><pre><code class="language-" data-lang="">tar -xf artifact.php\?name\=neo4j-community-2.3.2-unix.tar.gz 
+</code></pre></div>
+<p>I like clean workspaces, so I am going to remove the original file.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">rm artifact.php\?name\=neo4j-community-2.3.2-unix.tar.gz
+</code></pre></div>
+<h2>Review</h2>
+
+<p>This is what I now have in my workspace.  </p>
+<div class="highlight"><pre><code class="language-" data-lang="">total 12
+-rw-rw-r-- 1 ubuntu ubuntu  699 Sep 24 12:24 README.md
+drwxr-xr-x 8 ubuntu ubuntu 4096 Jan 12 23:01 neo4j-community-2.3.2/
+drwxr-xr-x 8 ubuntu ubuntu 4096 Mar  5 00:14 neo4j-neogen/
+</code></pre></div>
+<h2>Neo4j Configuration for Cloud9</h2>
+
+<p>One of the many awesome features of Neo4j is the power of it&#39;s browser tool, which I want to be able to access for my running database on Cloud9.  As of this writing, Cloud9 only opens ports <code>8080, 8081, and 8082</code> via this <a href="https://docs.c9.io/docs/run-an-application">page</a>, so we will need to modify some of Neo4j&#39;s default options.  </p>
+
+<blockquote>
+<p>One of the many reasons that I like working in cloud-based IDE&#39;s like Cloud9 is that I can edit the text files on my cloud server via the browser.  I know that it&#39;s cool to use <code>vim</code> and <code>vi</code> when working with remote files, but those tools just get in my way at my current skill level.  If I can use text editor in my browser (or locally), I will choose that option 100% of the time.  </p>
+</blockquote>
+
+<p>Using the in-browser IDE, navigate to the <code>neo4j-server.properties</code> file located in the <code>/conf</code> directory. If you double-click the file in the left-hand pane, you will open it within Cloud9&#39;s text editor.  For example, your browser should look similar after navigating and opening the file.  </p>
+
+<p><img src="https://s3.amazonaws.com/upload.screenshot.co/e971f1efb8" alt=""></p>
+
+<p>In the file above, we are going to make 3 changes:</p>
+
+<h4>1. Open the server to the public, not just the localhost</h4>
+
+<p>By default, this line is commented out.  All that you need to do remove the <code>#</code> in front of <code>org.neo4j.server.webserver.address=0.0.0.0</code>.  </p>
+
+<h4>2. Disable security. Yes, disable.</h4>
+
+<p>Obviously you should almost never do this, but for this exercise, I am just highlighting that you can.  Because this is just a tutorial and no real data are being used, security isn&#39;t needed.  <strong>But needless to say, please be careful when you change this setting in your own projects.</strong></p>
+
+<p>Currently you should see the following setting in the file: </p>
+<div class="highlight"><pre><code class="language-" data-lang="">dbms.security.auth_enabled=true
+</code></pre></div>
+<p>Set <code>true</code> to <code>false</code>.</p>
+
+<h4>3. Change the port so cloud9 will serve it.</h4>
+
+<p>As mentioned above, Cloud9 only opens a few ports.  Let&#39;s change the Neo4j&#39;s default port from <code>7474</code> to <code>8080</code>.</p>
+
+<p><strong>After saving the file</strong>, below shows the 3 settings that were modified:</p>
+
+<p><img src="https://s3.amazonaws.com/upload.screenshot.co/bbe080b2a1" alt=""></p>
+
+<h2>Fire up the database server</h2>
+
+<p>Now all that we need to do is start Neo4j.  In the terminal navigate to the directory that houses the database files.  In my case, the prompt reads:  <code>btibert3:~/workspace/neo4j-community-2.3.2 $</code>.  </p>
+
+<p>Now, we start the server with a simple command.  </p>
+<div class="highlight"><pre><code class="language-" data-lang="">bin/neo4j start
+</code></pre></div>
+<p>It might take a few seconds, but you should be good to go.  As a point of reference, there are a few commands that you will find helpful as you work through your projects.  </p>
+<div class="highlight"><pre><code class="language-" data-lang="">bin/neo4j start
+bin/neo4j stop
+bin/neo4j restart
+bin/neo4j status
+</code></pre></div>
+<p>With the changes above, we can access Neo4j&#39;s browser tool for this running database.  </p>
+
+<p>Generally speaking Cloud9 allows you to access your applications in your project workspace via the following naming convention.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">&lt;project&gt;-&lt;user&gt;.c9users.io:port/
+</code></pre></div>
+<p>In my case, I can access the browser tool for my project by opening up a new browser tab and navigating to:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">http://neo4j-graphgen-demo-btibert3.c9users.io:8080/browser/
+</code></pre></div>
+<p>But it&#39;s also worth noting that after Neo4j finishes the startup process, the terminal will print that the database is running on <code>localhost:8080</code>.  Within Cloud9, if you click on <code>localhost:8080</code>, it will bring up the browser tool in a new window; you won&#39;t need to type out the path above.</p>
+
+<h2>Use graphgen to prototype ideas</h2>
+
+<p>Now that we have a Neo4j instance running, we can leverage the neogen tool to build out our model and dataset.  There are a few ways to leverage the tool, but I am going to focus on the approach the works for my needs. I encourage you to explore the documentation and related projects.   </p>
+
+<p>In a new terminal instance (click the &quot;+&quot; sign in within Cloud9), navigate into the neogen tool we installed a few moments ago.  </p>
+<div class="highlight"><pre><code class="language-" data-lang="">cd neo4j-neogen/  
+</code></pre></div>
+<p>We need to checkout a specific tag within the git project we cloned earlier.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">git checkout tags/0.5.11
+</code></pre></div>
+<p>In my case, this is what I see in my terminal</p>
+<div class="highlight"><pre><code class="language-" data-lang="">btibert3:~/workspace/neo4j-neogen ((0.5.11)) $ ls -l
+total 100
+-rw-r--r--  1 ubuntu ubuntu  1063 Mar  5 00:14 LICENSE
+-rw-r--r--  1 ubuntu ubuntu  3418 Mar  5 00:14 README.md
+drwxr-xr-x  2 ubuntu ubuntu  4096 Mar  5 00:14 bin/
+-rw-r--r--  1 ubuntu ubuntu   390 Mar  5 00:14 box.json
+-rw-r--r--  1 ubuntu ubuntu  1136 Mar  5 01:42 composer.json
+-rw-r--r--  1 ubuntu ubuntu 64237 Mar  5 01:42 composer.lock
+-rw-r--r--  1 ubuntu ubuntu   784 Mar  5 00:14 phpunit.xml
+drwxr-xr-x 13 ubuntu ubuntu  4096 Mar  5 01:42 src/
+-rw-r--r--  1 ubuntu ubuntu  2117 Mar  5 01:42 test.php
+drwxr-xr-x  3 ubuntu ubuntu  4096 Mar  5 01:42 tests/
+</code></pre></div>
+<blockquote>
+<p>At this point I wanted to give a huge shout out and thanks to Christophe Willemsen for developing the neogen tool and working through some of my initial setup issues.  The large reason I wanted to write this post was to share the knowledge that I gained and help those who may also want to leverage Christophe&#39;s tool.  If you use neo4j and are following along on the slack channels, you are really missing out!</p>
+</blockquote>
+
+<p>Finally, you  will probably need to setup the php scripting environment.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">curl -s http://getcomposer.org/installer | php
+</code></pre></div>
+<p>and then  </p>
+<div class="highlight"><pre><code class="language-" data-lang="">php composer.phar install
+</code></pre></div>
+<p>Now, we should have everything that we need to populate our database.  </p>
+
+<h5>1.  Create a file to hold the basic commands</h5>
+
+<p>Within the neogen directory, I am simply going to type the command below to create an empty <code>cql</code> file which will hold the <code>cypher</code> commands that neogen will use to parse and build our database.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">touch basic-db.cql
+</code></pre></div>
+<h5>2. Populate the file</h5>
+
+<p>Open up the the <code>basic-db.cql</code> file that we just created from the file tree, and in the text editor, paste the <code>cypher</code> below and save the file.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">(stud:Student {sex: {randomElement:['M','F'] },
+              email: safeEmail,
+              userid: uuid,
+              state: stateAbbr,
+              add_date: {unixTime: ["now"]} } *35)
+</code></pre></div>
+<p>The neogen tool leverages the <code>faker</code> <code>PHP</code> library found <a href="https://github.com/fzaninotto/Faker#fakerprovideren_usperson">here</a>.  There are a host of commands that we can use to simulate all sorts of data elements. As a heavy R user, the <a href="https://github.com/trinker/wakefield">wakefield</a> is really great and provides similar functionality, but the <code>faker</code> library is very impressive in terms of what&#39;s possible.</p>
+
+<p>Last but not least, we want to run the command to seed our running database with data.  The important takeaway is that we want to specify the location, <strong>and port</strong> of a running database.  Neogen will handle the rest.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">./bin/neogen generate-cypher --export-db=localhost:8080 --source=build-db.cql
+</code></pre></div>
+<p>The command should print out </p>
+<div class="highlight"><pre><code class="language-" data-lang="">btibert3:~/workspace/neo4j-neogen ((0.5.11)) $ ./bin/neogen generate-cypher --export-db=localhost:8080 --source=build-db.cql
+Locating fixtures file
+Created 1 constraint(s)
+Created 35 node(s)
+Created 0 relationship(s)
+Graph generation done in 0.85389590263367 seconds
+</code></pre></div>
+<p>And in our browser, we will be able to see the data!</p>
+
+<p><img src="https://s3.amazonaws.com/upload.screenshot.co/e8ace1a82c" alt=""></p>
+
+<h2>Summary</h2>
+
+<p>In short, the aim was to highlight the steps necessary to build out a quick, free, development environment for Neo4j using Cloud9.  Hopefully you found this helpful. If you have any questions, feel free to shoot me a comment below and I will do my best to help you out.</p>
+
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'enrollmentnerdery'; // required: replace example with your forum shortname
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+</section>
+
+    </div>
+    <script src="/javascripts/scale.fix.js"></script>
+  </body>
+</html>
