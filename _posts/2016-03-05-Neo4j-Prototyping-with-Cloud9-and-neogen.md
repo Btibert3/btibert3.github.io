@@ -18,7 +18,7 @@ To follow along in this post, you don't need much.  In truth, all you really nee
 
 Once you are logged into Cloud9, spin up a new workspace. Below is the setup screen that you will most likely see.  
 
-![](https://s3.amazonaws.com/upload.screenshot.co/346897007e)
+![](https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-cloud9/image-1.png)
 
 Above, I am creating a public Cloud9 instance, and will be using the Custom template, but you can see that there are other pre-configured options available.  
 
@@ -26,11 +26,11 @@ Above, I am creating a public Cloud9 instance, and will be using the Custom temp
 
 When you are ready, spin up the instance.  You will probably see an image like below as the server is being set up.
 
-![](https://s3.amazonaws.com/upload.screenshot.co/1accbf05f7)
+![](https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-cloud9/image-2.png)
 
 That might take a few moments, and when it has completed, you will have your own workspace in the cloud, accessible via the browser.  You should see something similar to the screen below.  
 
-![](https://s3.amazonaws.com/upload.screenshot.co/a5cc664f24)
+![](https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-cloud9/image-3.png)
 
 On the left-hand side, we have a file tree, on the top is our text editor, and at the bottom, a terminal.  The workspace is totally customizable, so poke around and configure the environment to your liking.
 
@@ -96,7 +96,7 @@ One of the many awesome features of Neo4j is the power of it's browser tool, whi
 
 Using the in-browser IDE, navigate to the `neo4j-server.properties` file located in the `/conf` directory. If you double-click the file in the left-hand pane, you will open it within Cloud9's text editor.  For example, your browser should look similar after navigating and opening the file.  
 
-![](https://s3.amazonaws.com/upload.screenshot.co/e971f1efb8)
+![](https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-cloud9/image-4.png)
 
 In the file above, we are going to make 3 changes:
 
@@ -120,7 +120,7 @@ As mentioned above, Cloud9 only opens a few ports.  Let's change the Neo4j's def
 
 **After saving the file**, below shows the 3 settings that were modified:
 
-![](https://s3.amazonaws.com/upload.screenshot.co/bbe080b2a1)
+![](https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-cloud9/image-5.png)
 
 ## Fire up the database server
 
@@ -251,7 +251,7 @@ Graph generation done in 0.85389590263367 seconds
 And in our browser, we will be able to see the data!
 
 
-![](https://s3.amazonaws.com/upload.screenshot.co/e8ace1a82c)
+![](https://dl.dropboxusercontent.com/u/15276022/blog-images/neo4j-cloud9/image-6.png)
 
 
 ## Summary
