@@ -4,7 +4,7 @@ layout: post
 
 # Python, Rodeo, and Tableau Data Extract API
 
-Many moons ago, I wrote some code to build a Tableau Data Extract from the data I had munged together in `python`.  I figured it was time to update the code since I recently discovered that the Tableau API has changed.
+Many moons ago, I wrote some code to build a Tableau Data Extract from the work that I had munged together in `python`.  I figured it was time to update the code since I recently discovered that the Tableau API has changed.
 
 For a link to that old code, refer to the Jupyter Notebook in this [repo](https://github.com/Btibert3/tableau-r).
 
