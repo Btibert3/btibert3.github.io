@@ -155,15 +155,15 @@ except:
     tdefile = tde.Extract(fname)
 
 
-# define the table definition
+## define the table definition
 tableDef = tde.TableDefinition()
 
-# create a list of column names and types
+## create a list of column names and types
 colnames = df.columns
 coltypes = df.dtypes
 
-# create a dict for the field maps
-# Caveat: I am not including all of the possibilities below
+## create a dict for the field maps
+## Caveat: I am not including all of the possibilities below
 fieldMap = {
     'float64' :     tde.Types.Type.DOUBLE,
     'float32' :     tde.Types.Type.DOUBLE,
@@ -173,17 +173,17 @@ fieldMap = {
     'bool' :        tde.Types.Type.DOUBLE
 }
 
-# for each column, add the appropriate info the Table Definition
+## for each column, add the appropriate info the Table Definition
 for i in range(0, len(colnames)):
     cname = colnames[i]
     ctype = fieldMap.get(str(coltypes[i]))
     tableDef.addColumn(cname, ctype)  
 
 
-# create the extract from the Table Definition
-# Super Hacky, but legible
-# for each row, add the data to the table
-# Again, not accounting for every type or errors
+## create the extract from the Table Definition
+## Super Hacky, but legible
+## for each row, add the data to the table
+## Again, not accounting for every type or errors
 with tdefile as extract:
     table = extract.addTable("Extract", tableDef)
     for r in range(0, df.shape[0]):
