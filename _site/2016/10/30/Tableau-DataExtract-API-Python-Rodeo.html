@@ -47,24 +47,28 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <section>
 	<h1>Python, Rodeo, and Tableau Data Extract API</h1>
 
-<p>Many moons ago, I had some code to build a Tableau Data Extract from the data I munged together in python.  I figured it was time to update the code since the Tableau API has changed.</p>
+<p>Many moons ago, I wrote some code to build a Tableau Data Extract from the data I had munged together in <code>python</code>.  I figured it was time to update the code since I recently discovered that the Tableau API has changed.</p>
 
-<p>For a link to that old code, refer to the Jupyter Notebookk in this <a href="https://github.com/Btibert3/tableau-r">repo</a>.</p>
+<p>For a link to that old code, refer to the Jupyter Notebook in this <a href="https://github.com/Btibert3/tableau-r">repo</a>.</p>
 
 <h2>Assumptions and Requirements</h2>
 
-<p>First off, I am using a Macbook, and while I believe things are getting easier on Windows machines with respect to coding, I still prefer Mac&#39;s 10 times out of 10.  For tools, we will be using:</p>
+<p>First off, I am using a Macbook, and while I believe things are getting easier on Windows machines with respect to coding, I prefer to write Terminal commands over point-and-click installs.</p>
+
+<p>For tools, we will be using:</p>
 
 <ul>
-<li>A light-weight python instance from Anaconda called <a href="http://conda.pydata.org/miniconda.html">Miniconda</a>.  This let&#39;s us create environments that house the versions of the packages that we need, and it just works.  Install should be straight forward and is well documented on their site.  The beauty of <code>conda</code> is that the tool handles all of the version dependencies for us!  Prior, getting packages to work could be a nightmare at times.</li>
-<li><a href="https://onlinehelp.tableau.com/current/api/sdk/en-us/help.htm#SDK/tableau_sdk_using_python.htm%3FTocPath%3D_____4">The Tableau Python SDK</a>.  This was suprisingly harder to find that I would have guessed.  Simply download the SDK, unpack it, and follow the instructions at the link.  We will do this below, however.</li>
-<li>While not necessary, I am going to use <a href="https://www.yhat.com/products/rodeo">Yhat&#39;s Rodeo</a> IDE and list how to configure the editor to use a specific conda environment.  This is also easy to install, and assume that you have done so.</li>
-<li>Tableau, of course.<br></li>
+<li><p>A light-weight python instance from Anaconda called <a href="http://conda.pydata.org/miniconda.html">Miniconda</a>.  This lets us create environments that house the versions of the packages that we need, and it just works.  Installation should be easy and is well documented on their site.  The beauty of <code>conda</code> is that the tool handles all of the version dependencies for us!  Prior, getting packages to work could be a nightmare at times.</p></li>
+<li><p><a href="https://onlinehelp.tableau.com/current/api/sdk/en-us/help.htm#SDK/tableau_sdk_using_python.htm%3FTocPath%3D_____4">The Tableau Python SDK</a>.  This was surprisingly harder to find than I would have guessed.  Simply download the SDK, unpack it, and follow the instructions at the link.  We will do this below, however.</p></li>
+<li><p>While not necessary, I am going to use <a href="https://www.yhat.com/products/rodeo">Yhat&#39;s Rodeo</a> IDE and list how to configure the editor to use a specific conda environment.  This is also easy to install, and assumes that you have already done so.</p></li>
+<li><p>Tableau, of course.  </p></li>
 </ul>
 
 <h2>1.  Create our Python environment</h2>
 
-<p>Assuming you have miniconda installed properly, we are going to create a Python 2.7 environment for our work with the Tableau API. First, let&#39;s explore what I have for environments on my system.</p>
+<p>Assuming you have miniconda installed properly, we are going to create a Python 2.7 environment for our work with the Tableau API.</p>
+
+<p>First, let&#39;s explore what I have for environments on my system.</p>
 <div class="highlight"><pre><code class="language-" data-lang="">$ conda info --envs
 </code></pre></div>
 <p>yields</p>
@@ -75,49 +79,68 @@ ipy                      /Users/btibert/miniconda3/envs/ipy
 tableau                  /Users/btibert/miniconda3/envs/tableau
 root                  *  /Users/btibert/miniconda3
 </code></pre></div>
-<p>These are the environments that I have setup on my machine.  If you are not familar with environments, think of them as isolated installs of python with various packges for your use case.  Environments are a great way to isolate the versions and dependencies relative to a project, and allows you to avoid collisions if you just manage a single python environment.</p>
+<p>Above are the environments that I have set up on my machine.  If you are not familiar with environments, think of them as isolated installs of python with various packages for your use-case.  Environments are a great way to isolate the versions and dependencies relative to a project, and allows you to avoid collisions if you just manage a single python environment.</p>
 
 <p>Now, lets create our environment.  In this case, I am going to call it <code>tableau-post</code>.  </p>
 <div class="highlight"><pre><code class="language-" data-lang="">conda create -n tableau-post python=2.7 pandas jupyter matplotlib
 </code></pre></div>
-<p>This will install <code>python 2.7</code>, <code>pandas</code>, matplotlib, and <code>jupyter</code> (formerly ipython).  These packages and version are what you need to:</p>
+<p>This will install <code>python 2.7</code>, <code>pandas</code>, <code>matplotlib</code> and <code>jupyter</code> (formerly ipython).  </p>
+
+<p>These packages and version are what you need to:</p>
 
 <ul>
 <li>Run Rodeo</li>
 <li>Use the Tableau Data Extract API</li>
 </ul>
 
-<p>To activate the environment, simply use <code>source activate tableau-post</code>, and this will use the environment we just created.  To confirm, use <code>which python</code> after activating <code>tableau-post</code>.  In my case, this yields <code>/Users/btibert/miniconda3/envs/tableau-post/bin/python</code>.  We will use this when we configure <code>Rodeo</code> in a moment.  </p>
+<p>To activate the environment, simply use:  </p>
+<div class="highlight"><pre><code class="language-" data-lang=""> source activate tableau-post
+</code></pre></div>
+<p>The code above will activate our environment.</p>
+
+<p>To confirm that you are good to go:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">source activate tableau-post
+which python
+</code></pre></div>
+<p>In my case, this yields:</p>
+<div class="highlight"><pre><code class="language-" data-lang="">/Users/btibert/miniconda3/envs/tableau-post/bin/python
+</code></pre></div>
+<p><strong>We will use this when we configure Rodeo later on.</strong>  </p>
 
 <p>From this point forward, I am going to assume that you have <code>tableau-post</code> activated.</p>
 
 <h2>2.  Get the Tableau SDK</h2>
 
-<p>The code below jumps into <code>Downloads</code> and will get the Tableau SDK.</p>
-<div class="highlight"><pre><code class="language-" data-lang="">wget https://downloads.tableau.com/tssoftware/Tableau-SDK-Python-OSX-64Bit-10-0-2.tar.gz
+<p>The code below jumps into <code>Downloads</code> and will get the Tableau SDK from the web.</p>
+<div class="highlight"><pre><code class="language-" data-lang="">cd ~/Downloads/
+wget https://downloads.tableau.com/tssoftware/Tableau-SDK-Python-OSX-64Bit-10-0-2.tar.gz
 tar -xvzf Tableau-SDK-Python-OSX-64Bit-10-0-2.tar.gz
 </code></pre></div>
-<p>This will download and unpack the file, which will give you a folder with the SDK.  </p>
+<p>This will download and unpack the file, which will yields a directory that we need for installation.  </p>
 <div class="highlight"><pre><code class="language-" data-lang="">cd TableauSDK-10000.16.1004.1720/
 </code></pre></div>
 <p>The command above will navigate into the folder.</p>
 <div class="highlight"><pre><code class="language-" data-lang="">sudo python setyp.py install
 </code></pre></div>
-<p>The command above will install the Tableau SDK for you.  For more on this, go <a href="https://onlinehelp.tableau.com/current/api/sdk/en-us/help.htm#SDK/tableau_sdk_using_python.htm%3FTocPath%3D_____4">here</a></p>
+<p>The command above will install the Tableau SDK for you.  For more on this, go to <a href="https://onlinehelp.tableau.com/current/api/sdk/en-us/help.htm#SDK/tableau_sdk_using_python.htm%3FTocPath%3D_____4">this link</a></p>
 
 <h2>3.  Fire up Rodeo and Configure it</h2>
 
-<p>With Rodeo open, navigate to <code>Preferences</code>.  You will see a dialog box similar to below.</p>
+<p>With Rodeo open, navigate to <code>Preferences</code>.  You will see a dialog box similar to the one below.</p>
 
 <p><img src="https://github.com/Btibert3/public-figs/blob/master/Rodeo-Tableau-API/Rodeo-Preferences-Conda-Env.png?raw=true" alt="preferences"></p>
 
-<p>You can see above that for the <strong>Python Command</strong> I am using the same location as to what was printed from <code>which python</code> with the <code>tableau-post</code> environment.  It&#39;s that simple; now you can use isolated environments when developing with Rodeo!</p>
+<p>You can see above that for the <strong>Python Command</strong> I am using the same location that was printed from  the <code>which python</code> command within the <code>tableau-post</code> environment.  </p>
 
-<p>The majority of the code that I write is in <code>R</code> using the fantastic <code>Rstudio</code> IDE, and while the Rodeo tool is not as feature-rich (yet), it&#39;s great for the way I develop.  The fact that there is type-ahead and the ability to committ lines of my script 1x1 is extremely helpful for the way I work through my tasks.</p>
+<p>It&#39;s that simple; now you can use isolated environments when developing with Rodeo!</p>
+
+<p>The majority of the code that I write is in <code>R</code> using the fantastic <a href="https://www.rstudio.com/products/rstudio/">Rstudio IDE</a>, and while the Rodeo tool is not as feature-rich (yet), it&#39;s great for the way I develop.  The fact that there is &quot;type-ahead&quot; functionality (read: you write less code), and the ability to commit the lines of my script 1x1, is extremely helpful for the way I work through my tasks.  </p>
+
+<p>I hardly debug in an efficient way, but I also tend to solve smaller problems and do not require test suites.</p>
 
 <h2>4.  Build a Basic Extract</h2>
 
-<p>Below are a few helpful resources on how to use python to build out a Tableau Data Extract</p>
+<p>Below are a few helpful resources on how to use python to build out a Tableau Data Extract:</p>
 
 <ul>
 <li><a href="https://community.tableau.com/message/529982">Tableau Community Post</a></li>
@@ -207,12 +230,12 @@ tdefile.close()
 <p>Some notes on the process:</p>
 
 <ul>
-<li> I am attempting to build in some &quot;smarts&quot; as to define the column types by using the pandas data type and mapping that to a Tableau data type.</li>
+<li> I am attempting to build-in some &quot;smarts&quot; as to how you define the column types by using the pandas data type and mapping that to a Tableau data type.</li>
 <li> The process defines the table, and for each row, and each column in that row, loops through the data 1x1 to define each value, and then commits the data to the row.  <strong>NOT ALL TYPES ARE BEING ACCOUNTED FOR</strong></li>
 <li> Each row is being processed in a serial fashion, so this might take some time depending on the size of your dataset.</li>
 </ul>
 
-<p>I hope that this helps you out as you develop with Python and Tableau.  I recently have been trying to define a workflow locally to prototype my data needs, and since my dataset has millions of rows, using CSVs and local database tables just isn&#39;t cutting it.</p>
+<p>I hope that this helps you as you develop with Python and Tableau.  I recently have been trying to define a workflow locally to prototype my data needs, and since my dataset has millions of rows, using CSVs and local database tables just isn&#39;t cutting it.</p>
 
 	<div id="disqus_thread"></div>
 <script type="text/javascript">
