@@ -1,3 +1,7 @@
+---
+layout: post
+---
+
 # Python, Rodeo, and Tableau Data Extract API
 
 Many moons ago, I had some code to build a Tableau Data Extract from the data I munged together in python.  I figured it was time to update the code since the Tableau API has changed.
