@@ -116,7 +116,7 @@ analytical methods and code examples. Below, we will define the URL for
 the dataset, and then use this value to read in the CSV file from the
 web into a `data.frame` object called `df`.
 
-    URL = "http://www.ats.ucla.edu/stat/data/binary.csv"
+    URL = "https://stats.idre.ucla.edu/stat/data/binary.csv"
     df = read.csv(URL)
 
 Let's confirm that the data are in our `R` session.
